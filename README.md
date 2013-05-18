@@ -24,7 +24,7 @@ For more information, [check the wiki.](https://github.com/gold1/SublimeCakePHPF
 
 # Example
 
-- A command to jump to class file for the current word.
+- A command to jump to file for the current word.
 
 ```php
 <?php
@@ -38,11 +38,11 @@ For more information, [check the wiki.](https://github.com/gold1/SublimeCakePHPF
 
     public function index() {
         
+        // : command with the following line -> AuthComponent::allow()
         $this->Auth->allow('index');
-      //|-----------------| : command on line -> AuthComponent::allow()
         
+        // : command with the following line -> AuthComponent::$loginRedirect
         $this->Auth->loginRedirect = null;
-      //|-------------------------| : command on line -> AuthComponent::$loginRedirect
         
     }
 ```
