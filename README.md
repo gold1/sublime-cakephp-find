@@ -1,18 +1,18 @@
-SublimeCakePHPFind
+sublime-cakephp-find
 ==================
 You can find out file and open easily.
-For more information, [check the wiki.](https://github.com/gold1/SublimeCakePHPFind/wiki/Wiki)
+For more information, [check the wiki.](https://github.com/gold1/sublime-cakephp-find/wiki/Wiki)
 
 # Installation
 ### OSX
 
     $ cd ~/Library/Application\ Support/Sublime\ Text\ 2/Packages/
-    $ git clone git://github.com/gold1/SublimeCakePHPFind.git
+    $ git clone git://github.com/gold1/sublime-cakephp-find.git
 
 ### Linux (Ubuntu like distros)
 
     $ cd ~/.config/sublime-text-2/Packages/
-    $ git clone git://github.com/gold1/SublimeCakePHPFind.git
+    $ git clone git://github.com/gold1/sublime-cakephp-find.git
 
 ### Windows 7:
 
@@ -49,5 +49,5 @@ For more information, [check the wiki.](https://github.com/gold1/SublimeCakePHPF
 
 - You can choose file from panel.
 
-![controller](https://raw.github.com/gold1/SublimeCakePHPFind/master/docs/0001.png)
+![controller](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0001.png)
 

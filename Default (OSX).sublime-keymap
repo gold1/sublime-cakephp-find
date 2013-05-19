@@ -11,7 +11,7 @@
     { "keys": ["ctrl+shift+c", "ctrl+b"], "command": "cake_show_behavior_list" },
     { "keys": ["ctrl+shift+c", "ctrl+h"], "command": "cake_show_helper_list" },
     { "keys": ["ctrl+shift+c", "ctrl+l"], "command": "cake_show_lib_list" },
-    { "keys": ["ctrl+shift+c", "L"], "command": "cake_show_layout_list" },
+    { "keys": ["ctrl+shift+c", "ctrl+y"], "command": "cake_show_layout_list" },
     { "keys": ["ctrl+shift+c", "ctrl+s"], "command": "cake_show_css_list" },
     { "keys": ["ctrl+shift+c", "ctrl+j"], "command": "cake_show_javascript_list" },
     { "keys": ["ctrl+shift+c", "ctrl+e"], "command": "cake_show_element_list" },
