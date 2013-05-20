@@ -329,6 +329,8 @@ class Path:
 				file_list.append(file)
 			else:
 				dir_list.append(file)
+		dir_list.sort()
+		file_list.sort()
 		# create list
 		self.show_list_dir = dir_path
 		self.show_list = []
