@@ -39,8 +39,12 @@ def is_controller_file(self):
 	self.plural_name = match
 	self.action_name = Text().find_action_name_this_place(self.view)
 	if self.action_name is not None:
-		self.lower_camelized_action_name = Inflector().variablize(self.action_name)
-		self.snake_action_name = Inflector().underscore(self.action_name)
+		# private function
+		if self.action_name[0] == '_':
+			self.action_name = None
+		else:
+			self.lower_camelized_action_name = Inflector().variablize(self.action_name)
+			self.snake_action_name = Inflector().underscore(self.action_name)
 	self.singular_name = Inflector().singularize(self.plural_name)
 	self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
 	self.current_file_type = "controller"
