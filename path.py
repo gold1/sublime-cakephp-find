@@ -96,6 +96,11 @@ class Path:
 			self.element_folder_name = "elements"
 			self.plugin_folder_name = "plugins"
 			self.test_folder_name = "tests/cases"
+			self.controller_test_folder_name = "controllers"
+			self.model_test_folder_name = "models"
+			self.component_test_folder_name = "components"
+			self.behavior_test_folder_name = "behaviors"
+			self.helper_test_folder_name = "helpers"
 			self.core_controller_folder_name = "controller"
 			self.core_model_folder_name = "model"
 			self.core_view_folder_name = "view"
@@ -117,6 +122,11 @@ class Path:
 			self.element_folder_name = "Elements"
 			self.plugin_folder_name = "Plugin"
 			self.test_folder_name = "Test/Case"
+			self.controller_test_folder_name = "Controller"
+			self.model_test_folder_name = "Model"
+			self.component_test_folder_name = "Controller/Component"
+			self.behavior_test_folder_name = "Model/Behavior"
+			self.helper_test_folder_name = "View/Helper"
 			self.core_controller_folder_name = "Controller"
 			self.core_model_folder_name = "Model"
 			self.core_view_folder_name = "View"
@@ -204,6 +214,67 @@ class Path:
 
 	def match_css_file(self, view):
 		regexp = self.app + "webroot/css/(.+)\.css$"
+		match = self.match(regexp, self.convert_file_path(view))
+		if match == False:
+			return False
+		return match.group(1)
+
+	def match_controller_test_file(self, view):
+		if self.major_version == 1:
+			regexp = (self.app + self.test_folder_name + "/" + self.controller_test_folder_name +
+				"/([a-zA-Z0-9_]+)_controller\.test\.php$")
+		elif self.major_version == 2:
+			regexp = (self.app + self.test_folder_name + "/" + self.controller_test_folder_name +
+				".+/([a-zA-Z0-9_]+)ControllerTest\.php$")
+		match = self.match(regexp, self.convert_file_path(view))
+		if match == False:
+			return False
+		return match.group(1)
+
+	def match_model_test_file(self, view):
+		if self.major_version == 1:
+			regexp = (self.app + self.test_folder_name + "/" + self.model_test_folder_name +
+				"/([^/]+)\.test\.php")
+		elif self.major_version == 2:
+			regexp = (self.app + self.test_folder_name + "/" + self.model_test_folder_name +
+				"/([^/]+)Test\.php")
+		match = self.match(regexp, self.convert_file_path(view))
+		if (match == False or
+			self.match_behavior_file(view) != False):
+			return False
+		return match.group(1)
+
+	def match_component_test_file(self, view):
+		if self.major_version == 1:
+			regexp = (self.app + self.test_folder_name + "/" + self.component_test_folder_name +
+				"/([a-zA-Z0-9_]+)\.test\.php$")
+		elif self.major_version == 2:
+			regexp = (self.app + self.test_folder_name + "/" + self.component_test_folder_name +
+				"/([a-zA-Z0-9_]+)ComponentTest\.php$")
+		match = self.match(regexp, self.convert_file_path(view))
+		if match == False:
+			return False
+		return match.group(1)
+
+	def match_behavior_test_file(self, view):
+		if self.major_version == 1:
+			regexp = (self.app + self.test_folder_name + "/" + self.behavior_test_folder_name +
+				"/([^/]+)\.test\.php")
+		elif self.major_version == 2:
+			regexp = (self.app + self.test_folder_name + "/" + self.behavior_test_folder_name +
+				"/([^/]+)BehaviorTest\.php")
+		match = self.match(regexp, self.convert_file_path(view))
+		if match == False:
+			return False
+		return match.group(1)
+
+	def match_helper_test_file(self, view):
+		if self.major_version == 1:
+			regexp = (self.app + self.test_folder_name + "/" + self.helper_test_folder_name +
+				"/([a-zA-Z0-9_]+)\.test\.php$")
+		elif self.major_version == 2:
+			regexp = (self.app + self.test_folder_name + "/" + self.helper_test_folder_name +
+				"/([a-zA-Z0-9_]+)HelperTest\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
