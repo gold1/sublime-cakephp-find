@@ -276,7 +276,10 @@ def is_new_class(self):
 def is_class_operator(self):
 	if self.select_class_name is None:
 		return False
-	file_path = path.search_class_file_all_dir(self.select_class_name)
+	if self.select_class_name == "this":
+		file_path = self.view.file_name()
+	else:
+		file_path = path.search_class_file_all_dir(self.select_class_name)
 	if file_path == False:
 		return False
 	if self.select_sub_type is not None:

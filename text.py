@@ -122,8 +122,10 @@ class Text:
 		select_sub_name = None
 		select_sub_type = None
 		is_object_exists = False
+		is_after_this = False
 		for sel in self.sel_list:
 			if sel.type == "this":
+				is_after_this = True
 				continue
 			elif sel.type == "class" or sel.type == "object":
 				if is_object_exists:
@@ -137,9 +139,14 @@ class Text:
 				if is_object_exists:
 					select_sub_name = sel.word
 					select_sub_type = sel.type
+				elif is_after_this:
+					select_class_name = "this"
+					select_sub_name = sel.word
+					select_sub_type = sel.type
 				break
 			elif sel.type is None:
 				break
+			is_after_this = False
 		return select_class_name, select_sub_name, select_sub_type
 
 	def move_point_controller_action(self, view, arg):
