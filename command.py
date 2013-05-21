@@ -27,7 +27,12 @@ def is_file(self):
 		is_behavior_file(self) or
 		is_helper_file(self) or
 		is_layout_file(self) or
-		is_css_file(self)):
+		is_css_file(self) or
+		is_controller_test_file(self) or
+		is_model_test_file(self) or
+		is_component_test_file(self) or
+		is_behavior_test_file(self) or
+		is_helper_test_file(self)):
 		return True
 	else:
 		return False
@@ -56,6 +61,7 @@ def is_model_file(self):
 		return False
 	self.singular_name = match
 	self.plural_name = Inflector().pluralize(self.singular_name)
+	self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
 	self.current_file_type = "model"
 	return True
 
@@ -74,6 +80,7 @@ def is_component_file(self):
 	match = path.match_component_file(self.view)
 	if not match:
 		return False
+	self.singular_name = match
 	self.current_file_type = "component"
 	return True
 
@@ -81,6 +88,7 @@ def is_behavior_file(self):
 	match = path.match_behavior_file(self.view)
 	if not match:
 		return False
+	self.singular_name = match
 	self.current_file_type = "behavior"
 	return True
 
@@ -88,6 +96,7 @@ def is_helper_file(self):
 	match = path.match_helper_file(self.view)
 	if not match:
 		return False
+	self.singular_name = match
 	self.current_file_type = "helper"
 	return True
 
@@ -103,6 +112,50 @@ def is_css_file(self):
 	if not match:
 		return False
 	self.current_file_type = "css"
+	return True
+
+def is_controller_test_file(self):
+	match = path.match_controller_test_file(self.view)
+	if not match:
+		return False
+	self.plural_name = match
+	self.singular_name = Inflector().singularize(self.plural_name)
+	self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
+	self.current_file_type = "controller_test"
+	return True
+
+def is_model_test_file(self):
+	match = path.match_model_test_file(self.view)
+	if not match:
+		return False
+	self.singular_name = match
+	self.plural_name = Inflector().pluralize(self.singular_name)
+	self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
+	self.current_file_type = "model_test"
+	return True
+
+def is_component_test_file(self):
+	match = path.match_component_test_file(self.view)
+	if not match:
+		return False
+	self.singular_name = match
+	self.current_file_type = "component_test"
+	return True
+
+def is_behavior_test_file(self):
+	match = path.match_behavior_test_file(self.view)
+	if not match:
+		return False
+	self.singular_name = match
+	self.current_file_type = "behavior_test"
+	return True
+
+def is_helper_test_file(self):
+	match = path.match_helper_test_file(self.view)
+	if not match:
+		return False
+	self.singular_name = match
+	self.current_file_type = "helper_test"
 	return True
 
 def is_word_only_controller(self):
@@ -286,6 +339,42 @@ class CakeSwitchToViewCommand(sublime_plugin.TextCommand):
 			sublime.status_message("Can't switch to view.")
 			return
 		path.switch_to_view(self.view, self.plural_name, self.action_name, self.view_extension)
+
+class CakeSwitchToTestCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		if not set_app_path(self):
+			return
+		if is_controller_file(self):
+			path.switch_to_controller_test(self.view, self.plural_name)
+			return
+		elif is_controller_test_file(self):
+			path.switch_to_controller(self.view, self.plural_name)
+			return
+		elif is_model_file(self):
+			path.switch_to_model_test(self.view, self.singular_name)
+			return
+		elif is_model_test_file(self):
+			path.switch_to_model(self.view, self.singular_name)
+			return
+		elif is_component_file(self):
+			path.switch_to_component_test(self.view, self.singular_name)
+			return
+		elif is_component_test_file(self):
+			path.switch_to_component(self.view, self.singular_name)
+			return
+		elif is_behavior_file(self):
+			path.switch_to_behavior_test(self.view, self.singular_name)
+			return
+		elif is_behavior_test_file(self):
+			path.switch_to_behavior(self.view, self.singular_name)
+			return
+		elif is_helper_file(self):
+			path.switch_to_helper_test(self.view, self.singular_name)
+			return
+		elif is_helper_test_file(self):
+			path.switch_to_helper(self.view, self.singular_name)
+			return
+		sublime.status_message("Can't switch to testcase.")
 
 class CakeShowDirectoryListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

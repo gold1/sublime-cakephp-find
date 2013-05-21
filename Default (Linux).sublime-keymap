@@ -3,6 +3,7 @@
     { "keys": ["ctrl+shift+c", "m"], "command": "cake_switch_to_model" },
     { "keys": ["ctrl+shift+c", "v"], "command": "cake_switch_to_view" },
     { "keys": ["ctrl+shift+c", "c"], "command": "cake_switch_to_controller" },
+    { "keys": ["ctrl+shift+c", "t"], "command": "cake_switch_to_test" },
     { "keys": ["ctrl+shift+c", "ctrl+d"], "command": "cake_show_directory_list" },
     { "keys": ["ctrl+shift+c", "ctrl+c"], "command": "cake_show_controller_list" },
     { "keys": ["ctrl+shift+c", "ctrl+m"], "command": "cake_show_model_list" },

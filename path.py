@@ -185,8 +185,12 @@ class Path:
 		return match.group(1)
 
 	def match_behavior_file(self, view):
-		regexp = (self.app + self.model_folder_name + "/" + self.behavior_folder_name +
-			"/([^/]+)\.php")
+		if self.major_version == 1:
+			regexp = (self.app + self.model_folder_name + "/" +
+				self.behavior_folder_name + "/([a-zA-Z0-9_]+)\.php$")
+		elif self.major_version == 2:
+			regexp = (self.app + self.model_folder_name + "/" +
+				self.behavior_folder_name + "/([a-zA-Z0-9_]+)Behavior\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
@@ -222,14 +226,14 @@ class Path:
 	def match_controller_test_file(self, view):
 		if self.major_version == 1:
 			regexp = (self.app + self.test_folder_name + "/" + self.controller_test_folder_name +
-				"/([a-zA-Z0-9_]+)_controller\.test\.php$")
+				"/(.+/)*([a-zA-Z0-9_]+)_controller\.test\.php$")
 		elif self.major_version == 2:
 			regexp = (self.app + self.test_folder_name + "/" + self.controller_test_folder_name +
-				".+/([a-zA-Z0-9_]+)ControllerTest\.php$")
+				"/(.+/)*([a-zA-Z0-9_]+)ControllerTest\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
-		return match.group(1)
+		return match.group(2)
 
 	def match_model_test_file(self, view):
 		if self.major_version == 1:
@@ -289,13 +293,13 @@ class Path:
 			return self.app + self.view_folder_name + "/"
 		elif type == "component":
 			return (self.app + self.controller_folder_name + "/" +
-				"/" + self.component_folder_name + "/")
+				self.component_folder_name + "/")
 		elif type == "helper":
 			return (self.app + self.view_folder_name + "/" +
-				"/" + self.helper_folder_name + "/")
+				self.helper_folder_name + "/")
 		elif type == "behavior":
 			return (self.app + self.model_folder_name + "/" +
-				"/" + self.behavior_folder_name + "/")
+				self.behavior_folder_name + "/")
 		elif type == "lib":
 			return self.app + self.lib_folder_name + "/"
 		elif type == "vendor":
@@ -320,13 +324,13 @@ class Path:
 			return self.app + self.test_folder_name + "/"
 		elif type == "core_component":
 			return (self.core + self.core_controller_folder_name + "/" +
-				"/" + self.core_component_folder_name + "/")
+				self.core_component_folder_name + "/")
 		elif type == "core_helper":
 			return (self.core + self.core_view_folder_name + "/" +
-				"/" + self.core_helper_folder_name + "/")
+				self.core_helper_folder_name + "/")
 		elif type == "core_behavior":
 			return (self.core + self.core_model_folder_name + "/" +
-				"/" + self.core_behavior_folder_name + "/")
+				self.core_behavior_folder_name + "/")
 		elif type == "core_lib":
 			return self.core + self.core_lib_folder_name
 		return False
@@ -343,8 +347,51 @@ class Path:
 		file_path = self.dir_type("view") + plural_name + "/" + action_name + "." + view_extension
 		return self.switch_to_file(file_path, view)
 
+	def switch_to_component(self, view, singular_name):
+		file_path = (self.dir_type("component") + 
+			self.complete_file_name_component(singular_name))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_behavior(self, view, singular_name):
+		file_path = (self.dir_type("behavior") + 
+			self.complete_file_name_behavior(singular_name))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_helper(self, view, singular_name):
+		file_path = (self.dir_type("helper") + 
+			self.complete_file_name_helper(singular_name))
+		return self.switch_to_file(file_path, view)
+
 	def switch_to_layout(self, view, layout_name, view_extension):
 		file_path = self.dir_type("layout") + layout_name + "." + view_extension
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_controller_test(self, view, plural_name):
+		file_path = (self.dir_type("test") + self.controller_folder_name + "/" +
+			self.complete_file_path_test(self.controller_file_name(plural_name)))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_model_test(self, view, singular_name):
+		file_path = (self.dir_type("test") + self.model_folder_name + "/" +
+			self.complete_file_path_test(self.complete_file_name_model(singular_name)))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_component_test(self, view, singular_name):
+		file_path = (self.dir_type("test") + self.controller_folder_name + "/" +
+			self.component_folder_name + "/" +
+			self.complete_file_path_test(self.complete_file_name_component(singular_name)))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_behavior_test(self, view, singular_name):
+		file_path = (self.dir_type("test") + self.model_folder_name + "/" +
+			self.behavior_folder_name + "/" +
+			self.complete_file_path_test(self.complete_file_name_behavior(singular_name)))
+		return self.switch_to_file(file_path, view)
+
+	def switch_to_helper_test(self, view, singular_name):
+		file_path = (self.dir_type("test") + self.view_folder_name + "/" +
+			self.helper_folder_name + "/" +
+			self.complete_file_path_test(self.complete_file_name_helper(singular_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_file(self, file_path, view):
@@ -556,5 +603,13 @@ class Path:
 			return name
 		return name + '.css'
 
+	def complete_file_path_test(self, file_path):
+		if file_path[-4:] == '.php':
+			file_path = file_path[0:len(file_path)-4]
+		if self.major_version == 1:
+			return file_path + '.test.php'
+		elif self.major_version == 2:
+			return file_path + 'Test.php'
+		return None
 
 
