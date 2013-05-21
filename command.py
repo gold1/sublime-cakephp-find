@@ -107,13 +107,7 @@ def is_css_file(self):
 
 def is_word_only_controller(self):
 	return (is_render_function(self) or
-			is_layout_variable(self) or
-			is_loaded_component(self) or
-			is_loaded_model(self) or
-			is_loaded_helper(self))
-
-def is_word_only_model(self):
-	return is_loaded_behavior(self)
+			is_layout_variable(self))
 
 def is_word_only_view(self):
 	return (is_element_function(self) or
@@ -121,15 +115,8 @@ def is_word_only_view(self):
 			is_css_function(self) or
 			is_image_function(self))
 
-def is_word_only_component(self):
-	return is_loaded_component(self)
-
-def is_word_only_behavior(self):
-	return is_loaded_behavior(self)
-
 def is_word_only_helper(self):
-	return (is_loaded_helper(self) or
-			is_image_function(self))
+	return is_image_function(self)
 
 def is_word_only_layout(self):
 	return (is_element_function(self) or
@@ -162,52 +149,6 @@ def is_layout_variable(self):
 	if self.layout_name is None:
 		return False
 	path.switch_to_layout(self.view, self.layout_name, self.view_extension)
-	return True
-
-def is_loaded_model(self):
-	if not Text().is_loaded_class(self.select_word, self.select_line_str):
-		return False
-	model_file_name = path.complete_file_name_model(self.select_word)
-	file_path = path.search_file_recursive(model_file_name, path.dir_type("model"))
-	if file_path == False:
-		return False
-	path.switch_to_file(file_path, self.view)
-	return True
-
-def is_loaded_component(self):
-	if not Text().is_loaded_class(self.select_word, self.select_line_str):
-		return False
-	component_file_name = path.complete_file_name_component(self.select_word)
-	file_path = path.search_file_recursive(component_file_name, path.dir_type("component"))
-	if file_path == False:
-		file_path = path.search_file_recursive(component_file_name, path.dir_type("core_component"))
-		if file_path == False:
-			return False
-	path.switch_to_file(file_path, self.view)
-	return True
-
-def is_loaded_helper(self):
-	if not Text().is_loaded_class(self.select_word, self.select_line_str):
-		return False
-	helper_file_name = path.complete_file_name_helper(self.select_word)
-	file_path = path.search_file_recursive(helper_file_name, path.dir_type("helper"))
-	if file_path == False:
-		file_path = path.search_file_recursive(helper_file_name, path.dir_type("core_helper"))
-		if file_path == False:
-			return False
-	path.switch_to_file(file_path, self.view)
-	return True
-
-def is_loaded_behavior(self):
-	if not Text().is_loaded_class(self.select_word, self.select_line_str):
-		return False
-	behavior_file_name = path.complete_file_name_behavior(self.select_word)
-	file_path = path.search_file_recursive(behavior_file_name, path.dir_type("behavior"))
-	if file_path == False:
-		file_path = path.search_file_recursive(behavior_file_name, path.dir_type("core_behavior"))
-		if file_path == False:
-			return False
-	path.switch_to_file(file_path, self.view)
 	return True
 
 def is_element_function(self):
@@ -297,20 +238,14 @@ class CakeFindCommand(sublime_plugin.TextCommand):
 		if not is_file(self):
 			sublime.status_message("Can't find file type.")
 			return
-		(self.select_word, self.select_line_str, self.select_class_name,
+		(self.select_word, self.select_word_region, self.select_line_str, self.select_class_name,
 			self.select_sub_name, self.select_sub_type) = Text().get_cursol_info(self.view)
 
 		found = False
 		if self.current_file_type == "controller":
 			found = is_word_only_controller(self)
-		elif self.current_file_type == "model":
-			found = is_word_only_model(self)
 		elif self.current_file_type == "view":
 			found = is_word_only_view(self)
-		elif self.current_file_type == "component":
-			found = is_word_only_component(self)
-		elif self.current_file_type == "behavior":
-			found = is_word_only_behavior(self)
 		elif self.current_file_type == "helper":
 			found = is_word_only_helper(self)
 		elif self.current_file_type == "layout":
