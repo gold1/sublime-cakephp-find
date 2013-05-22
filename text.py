@@ -50,7 +50,7 @@ class Text:
 		sel = Sel()
 		sel.word = word
 		right_operator = view.substr(sublime.Region(region.end(), region.end() + 3))
-		if re.search("^[,;\[]", right_operator) is not None:
+		if re.search("^[,;\[\)\]]", right_operator) is not None:
 			right_type = "variable"
 		elif re.search("^\(", right_operator) is not None:
 			right_type = "function"
