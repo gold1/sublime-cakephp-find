@@ -182,6 +182,7 @@ def is_word_only_css(self):
 
 def is_word_any_file(self):
 	if (is_new_class(self) or
+		is_app_import(self) or
 		is_class_operator(self)):
 		return True
 	return False
@@ -281,6 +282,16 @@ def is_class_operator(self):
 			path.set_open_file_callback(Text().move_point_function, self.select_sub_name)
 		elif self.select_sub_type == "variable":
 			path.set_open_file_callback(Text().move_point_variable, self.select_sub_name)
+	path.switch_to_file(file_path, self.view)
+	return True
+
+def is_app_import(self):
+	file_name = Text().match_app_import(self.select_line_str)
+	if not file_name:
+		return False
+	file_path = path.search_class_file_all_dir(file_name)
+	if file_path == False:
+		return False
 	path.switch_to_file(file_path, self.view)
 	return True
 

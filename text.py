@@ -269,5 +269,14 @@ class Text:
 			return False, False
 		return match.group(2), match.group(1)
 
+	def match_app_import(self, line_content):
+		# App::import('Vendor', 'Plugin.flickr/flickr');
+		match = re.search("import\(['\"][a-zA-Z0-9_]+['\"],[ \t]*['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
+		if match is None:
+			return False
+		split = match.group(1).split('/')
+		split = split[-1].split('.')
+		return split[-1]
+
 
 
