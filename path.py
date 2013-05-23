@@ -534,9 +534,9 @@ class Path:
 			if file_path: return file_path
 
 		list = ["component", "helper", "behavior"]
-		# sort list
-		# because 'Session' word find 'SessionComponent' and 'SessionHelper'
 		if current_file_type is not None:
+			# sort list
+			# because 'Session' word find 'SessionComponent' and 'SessionHelper'
 			change_file_type = None
 			if current_file_type == 'controller' or current_file_type == 'component':
 				change_file_type = 'component'
@@ -547,6 +547,9 @@ class Path:
 			if change_file_type is not None:
 				list.remove(change_file_type)
 				list.insert(0, change_file_type)
+			# change class name : $form->input() -> $Form->input()
+			if change_file_type == 'helper' and re.match('^[a-z]', search_class_name) is not None:
+				search_class_name = search_class_name[0:1].upper() + search_class_name[1:len(search_class_name)]
 		for class_type in list:
 			file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.dir_type(class_type))
 			if file_path: return file_path
