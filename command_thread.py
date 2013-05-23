@@ -2,6 +2,7 @@
 
 import sublime
 import os
+import sys
 import subprocess
 import threading
 import functools
@@ -17,19 +18,18 @@ class CommandThread(threading.Thread):
 		sublime.set_timeout(functools.partial(callback, *args), 0)
 
 	def print_result(self, message):
-		print(message)
+		if message is not None:
+			print(message)
 
 	def run(self):
+		callback = self.print_result
 		try:
-			shell = os.name == 'nt'
-			proc = subprocess.Popen(self.command,
-				stdout=self.stdout, stderr=subprocess.STDOUT,
-				stdin=subprocess.PIPE,
-				shell=shell, universal_newlines=True)
-			output = proc.communicate(self.stdin)[0]
-			if not output:
-				output = ''
-			callback = self.print_result
+			if sys.platform.startswith('darwin'): # Mac OS X
+				output = subprocess.call(self.command)
+			elif os.name == "posix": # linux
+				output = subprocess.call(self.command)
+			elif os.name == "nt": # windows
+				output = os.startfile(self.command)
 			self.timeout(callback, output)
 		except subprocess.CalledProcessError, e:
 			self.timeout(callback, e.returncode)

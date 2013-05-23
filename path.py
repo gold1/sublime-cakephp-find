@@ -3,6 +3,7 @@
 import sublime, sublime_plugin
 import re
 import os
+import sys
 import time
 import subprocess
 import threading
@@ -492,10 +493,12 @@ class Path:
 		return False
 
 	def execute(self, path):
-		if os.name == "nt":
-			command = [path]
-		elif os.name == "mac":
-			command = ["open", path]
+		if sys.platform.startswith('darwin'): # Mac OS X
+			command = ['open', path]
+		elif os.name == "posix": # linux
+			command = ['xdg-open', path]
+		elif os.name == "nt": # windows
+			command = path
 		else:
 			return
 		thread = CommandThread(command)
