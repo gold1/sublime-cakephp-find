@@ -208,7 +208,7 @@ def is_element_function(self):
 	self.element_name = Text().match_element_function(self.select_line_str)
 	if self.element_name is None:
 		return False
-	element_file_name = path.complete_file_name_element(self.element_name)
+	element_file_name = path.complete_file_name('element', self.element_name)
 	file_path = path.search_file_recursive(element_file_name, path.dir_type("element"))
 	if file_path == False:
 		return False
@@ -219,7 +219,7 @@ def is_javascript_function(self):
 	self.javascript_name = Text().match_javascript_function(self.select_line_str)
 	if self.javascript_name is None:
 		return False
-	javascript_file_name = path.complete_file_name_javascript(self.javascript_name)
+	javascript_file_name = path.complete_file_name('javascript', self.javascript_name)
 	file_path = path.search_file_recursive(javascript_file_name, path.dir_type("javascript"))
 	if file_path == False:
 		return False
@@ -230,7 +230,7 @@ def is_css_function(self):
 	self.css_name = Text().match_css_function(self.select_line_str)
 	if self.css_name is None:
 		return False
-	css_file_name = path.complete_file_name_css(self.css_name)
+	css_file_name = path.complete_file_name('css', self.css_name)
 	file_path = path.search_file_recursive(css_file_name, path.dir_type("css"))
 	if file_path == False:
 		return False
@@ -273,7 +273,7 @@ def is_class_operator(self):
 	if self.select_class_name == "this":
 		file_path = self.view.file_name()
 	else:
-		file_path = path.search_class_file_all_dir(self.select_class_name)
+		file_path = path.search_class_file_all_dir(self.select_class_name, self.current_file_type)
 	if file_path == False:
 		return False
 	if self.select_sub_type is not None:

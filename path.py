@@ -336,7 +336,7 @@ class Path:
 		return False
 
 	def switch_to_controller(self, view, plural_name):
-		file_path = self.dir_type("controller") + self.controller_file_name(plural_name)
+		file_path = self.dir_type("controller") + self.complete_file_name('controller', plural_name)
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_model(self, view, singular_name):
@@ -349,17 +349,17 @@ class Path:
 
 	def switch_to_component(self, view, singular_name):
 		file_path = (self.dir_type("component") + 
-			self.complete_file_name_component(singular_name))
+			self.complete_file_name('component', singular_name))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_behavior(self, view, singular_name):
 		file_path = (self.dir_type("behavior") + 
-			self.complete_file_name_behavior(singular_name))
+			self.complete_file_name('behavior', singular_name))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_helper(self, view, singular_name):
 		file_path = (self.dir_type("helper") + 
-			self.complete_file_name_helper(singular_name))
+			self.complete_file_name('helper', singular_name))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_layout(self, view, layout_name, view_extension):
@@ -368,30 +368,30 @@ class Path:
 
 	def switch_to_controller_test(self, view, plural_name):
 		file_path = (self.dir_type("test") + self.controller_folder_name + "/" +
-			self.complete_file_path_test(self.controller_file_name(plural_name)))
+			self.add_file_path_test(self.complete_file_name('controller', plural_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_model_test(self, view, singular_name):
 		file_path = (self.dir_type("test") + self.model_folder_name + "/" +
-			self.complete_file_path_test(self.complete_file_name_model(singular_name)))
+			self.add_file_path_test(self.complete_file_name('model', singular_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_component_test(self, view, singular_name):
 		file_path = (self.dir_type("test") + self.controller_folder_name + "/" +
 			self.component_folder_name + "/" +
-			self.complete_file_path_test(self.complete_file_name_component(singular_name)))
+			self.add_file_path_test(self.complete_file_name('component', singular_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_behavior_test(self, view, singular_name):
 		file_path = (self.dir_type("test") + self.model_folder_name + "/" +
 			self.behavior_folder_name + "/" +
-			self.complete_file_path_test(self.complete_file_name_behavior(singular_name)))
+			self.add_file_path_test(self.complete_file_name('behavior', singular_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_helper_test(self, view, singular_name):
 		file_path = (self.dir_type("test") + self.view_folder_name + "/" +
 			self.helper_folder_name + "/" +
-			self.complete_file_path_test(self.complete_file_name_helper(singular_name)))
+			self.add_file_path_test(self.complete_file_name('helper', singular_name)))
 		return self.switch_to_file(file_path, view)
 
 	def switch_to_file(self, file_path, view):
@@ -518,7 +518,7 @@ class Path:
 				return root + name
 		return False
 
-	def search_class_file_all_dir(self, search_class_name):
+	def search_class_file_all_dir(self, search_class_name, current_file_type=None):
 		if self.major_version == 1:
 			file_name = Inflector().underscore(search_class_name)
 		elif self.major_version == 2:
@@ -533,77 +533,69 @@ class Path:
 			file_path = self.search_file_recursive(file_name + ".php", self.dir_type("core_lib"))
 			if file_path: return file_path
 
-		file_path = self.search_file_recursive(self.complete_file_name_component(search_class_name), self.dir_type("component"))
-		if file_path: return file_path
-		file_path = self.search_file_recursive(self.complete_file_name_helper(search_class_name), self.dir_type("helper"))
-		if file_path: return file_path
-		file_path = self.search_file_recursive(self.complete_file_name_behavior(search_class_name), self.dir_type("behavior"))
-		if file_path: return file_path
+		list = ["component", "helper", "behavior"]
+		# sort list
+		# because 'Session' word find 'SessionComponent' and 'SessionHelper'
+		if current_file_type is not None:
+			change_file_type = None
+			if current_file_type == 'controller' or current_file_type == 'component':
+				change_file_type = 'component'
+			if current_file_type == 'view' or current_file_type == 'helper':
+				change_file_type = 'helper'
+			if current_file_type == 'model' or current_file_type == 'behavior':
+				change_file_type = 'behavior'
+			if change_file_type is not None:
+				list.remove(change_file_type)
+				list.insert(0, change_file_type)
+		for class_type in list:
+			file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.dir_type(class_type))
+			if file_path: return file_path
 
 		if self.core is not None:
-			file_path = self.search_file_recursive(self.complete_file_name_component(search_class_name), self.dir_type("core_component"))
-			if file_path: return file_path
-			file_path = self.search_file_recursive(self.complete_file_name_helper(search_class_name), self.dir_type("core_helper"))
-			if file_path: return file_path
-			file_path = self.search_file_recursive(self.complete_file_name_behavior(search_class_name), self.dir_type("core_behavior"))
-			if file_path: return file_path
+			for class_type in list:
+				file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.dir_type('core_' + class_type))
+				if file_path: return file_path
 		return False
 
-	def controller_file_name(self, plural_name):
-		if self.major_version == 1:
-			return plural_name + "_controller.php"
-		elif self.major_version == 2:
-			return plural_name + "Controller.php"
-
-	def complete_file_name_controller(self, name):
-		if self.major_version == 1:
-			return Inflector().underscore(name) + '_controller.php'
-		elif self.major_version == 2:
-			return name + 'Controller.php'
+	def complete_file_name(self, type, name):
+		if type == 'controller':
+			if self.major_version == 1:
+				return Inflector().underscore(name) + '_controller.php'
+			elif self.major_version == 2:
+				return name + 'Controller.php'
+		elif type == 'model':
+			if self.major_version == 1:
+				return Inflector().underscore(name) + '.php'
+			elif self.major_version == 2:
+				return name + '.php'
+		elif type == 'component':
+			if self.major_version == 1:
+				return Inflector().underscore(name) + '.php'
+			elif self.major_version == 2:
+				return name + 'Component.php'
+		elif type == 'behavior':
+			if self.major_version == 1:
+				return Inflector().underscore(name) + '.php'
+			elif self.major_version == 2:
+				return name + 'Behavior.php'
+		elif type == 'helper':
+			if self.major_version == 1:
+				return Inflector().underscore(name) + '.php'
+			elif self.major_version == 2:
+				return name + 'Helper.php'
+		elif type == 'element':
+			return Inflector().underscore(name) + '.ctp'
+		elif type == 'javascript':
+			if re.search("\.js$", name) is not None:
+				return name
+			return name + '.js'
+		elif type == 'css':
+			if re.search("\.css$", name) is not None:
+				return name
+			return name + '.css'
 		return None
 
-	def complete_file_name_model(self, name):
-		if self.major_version == 1:
-			return Inflector().underscore(name) + '.php'
-		elif self.major_version == 2:
-			return name + '.php'
-		return None
-
-	def complete_file_name_component(self, name):
-		if self.major_version == 1:
-			return Inflector().underscore(name) + '.php'
-		elif self.major_version == 2:
-			return name + 'Component.php'
-		return None
-
-	def complete_file_name_behavior(self, name):
-		if self.major_version == 1:
-			return Inflector().underscore(name) + '.php'
-		elif self.major_version == 2:
-			return name + 'Behavior.php'
-		return None
-
-	def complete_file_name_helper(self, name):
-		if self.major_version == 1:
-			return Inflector().underscore(name) + '.php'
-		elif self.major_version == 2:
-			return name + 'Helper.php'
-		return None
-
-	def complete_file_name_element(self, name):
-		return Inflector().underscore(name) + '.ctp'
-
-	def complete_file_name_javascript(self, name):
-		if re.search("\.js$", name) is not None:
-			return name
-		return name + '.js'
-
-	def complete_file_name_css(self, name):
-		if re.search("\.css$", name) is not None:
-			return name
-		return name + '.css'
-
-	def complete_file_path_test(self, file_path):
+	def add_file_path_test(self, file_path):
 		if file_path[-4:] == '.php':
 			file_path = file_path[0:len(file_path)-4]
 		if self.major_version == 1:
