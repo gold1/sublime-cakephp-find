@@ -60,12 +60,12 @@ class Text:
 		elif re.search("^(->|::)", right_operator) is not None:
 			right_type = "object"
 			right_region = view.word(sublime.Region(region.end() + 2, region.end() + 3))
-		elif re.search("^['\"]", right_operator) is not None:
-			right_type = "quotation"
+		elif re.search("^[\r\n{ \t'\"]", right_operator) is not None:
+			right_type = "string"
 		else:
 			right_type = None
 		left_operator = view.substr(sublime.Region(region.begin() -3, region.begin()))
-		if re.search("[, \t\(]$", left_operator) is not None:
+		if re.search("[,\r\n \t\(]$", left_operator) is not None:
 			left_type = "class"
 		elif re.search("::\$$", left_operator) is not None:
 			left_type = "object"
@@ -76,7 +76,7 @@ class Text:
 			left_type = "object"
 			left_region = view.word(sublime.Region(region.begin() - 3, region.begin() - 2))
 		elif re.search("['\"]$", left_operator) is not None:
-			left_type = "quotation"
+			left_type = "string"
 		else:
 			left_type = None
 
@@ -94,7 +94,8 @@ class Text:
 				sel.word = new_class_name
 		elif right_type == "object":
 			type = "object"
-		elif left_type == "quotation" and right_type == "quotation":
+		elif (right_type == "string" and
+			(left_type == "string" or left_type == "class")):
 			type = "string"
 		else:
 			type = None
