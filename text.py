@@ -33,6 +33,8 @@ class Text:
 		select_line_str = view.substr(view.line(region))
 		select_region = view.word(region.begin())
 		select_word = view.substr(select_region)
+		select_css_tag_region = self.get_css_tag_word_region(view, select_region)
+		select_css_tag_word = view.substr(select_css_tag_region)
 		if re.search("(->|::)", select_word) is not None:
 			# get left word
 			select_region = view.word(sublime.Region(select_region.a - 1, select_region.a))
@@ -40,7 +42,7 @@ class Text:
 		self.sel_list = []
 		self.get_word_operator_info(view, select_region, 0, True)
 		(select_class_name, select_sub_name, select_sub_type) = self.get_cursol_class_info()
-		return select_word, select_region, select_line_str, select_class_name, select_sub_name, select_sub_type
+		return select_word, select_css_tag_word, select_region, select_css_tag_region, select_line_str, select_class_name, select_sub_name, select_sub_type
 
 	def get_word_operator_info(self, view, region, direction, select_word_flag = False):
 		word = view.substr(region)
@@ -49,7 +51,9 @@ class Text:
 
 		sel = Sel()
 		sel.word = word
+
 		right_operator = view.substr(sublime.Region(region.end(), region.end() + 3))
+		right_region = None
 		if re.search("^[,;\.\[\)\]]", right_operator) is not None:
 			right_type = "variable"
 		elif re.search("^\(", right_operator) is not None:
@@ -64,7 +68,9 @@ class Text:
 			right_type = "string"
 		else:
 			right_type = None
+
 		left_operator = view.substr(sublime.Region(region.begin() -3, region.begin()))
+		left_region = None
 		if re.search("[,\.\r\n \t\(]$", left_operator) is not None:
 			left_type = "class"
 		elif re.search("::\$$", left_operator) is not None:
@@ -85,7 +91,8 @@ class Text:
 			type = "this"
 		elif right_type == "variable" or right_type == "function":
 			type = right_type
-		elif left_type == "class" and right_type == "object":
+		elif (left_type == "class" and
+			(right_type == "object" or right_type == "class")):
 			type = "class"
 		elif left_type == "variable" and right_type == "object":
 			type = "object"
@@ -108,12 +115,12 @@ class Text:
 			self.sel_list = [sel] + self.sel_list
 
 		# left direction once
-		if (direction <= 0 and
+		if (direction <= 0 and left_region is not None and
 			left_type == "object" and
 			(type == "variable" or type == "function")):
 			self.get_word_operator_info(view, left_region, -1)
 		# right direction repeat
-		if (direction >= 0 and
+		if (direction >= 0 and right_region is not None and
 			(type == "this" or type == "class" or type == "object")):
 			self.get_word_operator_info(view, right_region, 1)
 
@@ -159,6 +166,26 @@ class Text:
 			is_after_this = False
 		return select_class_name, select_sub_name, select_sub_type
 
+	def get_css_tag_word_region(self, view, region):
+		before_region = region
+		# left
+		while True:
+			new_region = sublime.Region(before_region.a - 1, before_region.b)
+			word = view.substr(new_region)
+			match = re.search("^[^a-zA-Z0-9\_\-]", word)
+			if match is not None:
+				break
+			before_region = new_region
+		# right
+		while True:
+			new_region = sublime.Region(before_region.a, before_region.b + 1)
+			word = view.substr(new_region)
+			match = re.search("[^a-zA-Z0-9\_\-]$", word)
+			if match is not None:
+				break
+			before_region = new_region
+		return before_region
+
 	def move_point_controller_action(self, view, arg):
 		(action_name, ) = arg
 		point = self.search_point_function(Inflector().variablize(action_name), view)
@@ -182,6 +209,11 @@ class Text:
 			return
 		self.move_view_point(view, point)
 
+	def move_line_number(self, view, arg):
+		(line_number, ) = arg
+		point = view.text_point(line_number, 0)
+		self.move_view_point(view, point)
+
 	def search_point_function(self, function_name, view):
 		match = re.search("function " + function_name + " *\(", self.view_content(view))
 		if match is None:
@@ -202,13 +234,23 @@ class Text:
 
 	def match_render_function(self, line_content):
 		# $this->render("view") or
-		# $this->render("view", "layout")
-		match = re.search("render\((\"|\')([a-zA-Z0-9_]+)(\"|\')(,[ \t]*(\"|\')([a-zA-Z0-9_]+)(\"|\'))?", line_content)
+		# $this->render("view", "layout") or
+		# $this->render('/Elements/ajaxreturn');
+		match = re.search("render\((\"|\')([a-zA-Z0-9_/]+)(\"|\')(,[ \t]*(\"|\')([a-zA-Z0-9_]+)(\"|\'))?", line_content)
 		if match is None:
-			return None, None
-		if match.group(6) is None:
-			return match.group(2), None
-		return match.group(2), match.group(6)
+			return None, None, None
+		layout_name = None
+		if match.group(6) is not None:
+			layout_name = match.group(6)
+		controller_name = None
+		view = match.group(2)
+		if view[0:1] == '/':
+			list = view[1:].split('/')
+			controller_name = list[0]
+			view_name = list[1]
+		else:
+			view_name = view
+		return controller_name, view_name, layout_name
 
 	def match_layout_variable(self, line_content):
 		# public $layout = "default";
@@ -242,6 +284,25 @@ class Text:
 			return None
 		return match.group(2)
 
+	def match_tag_id_class(self, line_content):
+		# <span class="notice success"></span>
+		# <div id="footer"></div>
+		id_list = []
+		class_list = []
+		match = re.search("class[ \t]*=[ \t]*[\"\']([a-zA-Z0-9_\- ]+)[\"\']", line_content)
+		if match is not None:
+			list = match.group(1).split(' ')
+			for str in list:
+				if str != '':
+					class_list.append(str)
+		match = re.search("id[ \t]*=[ \t]*[\"\']([a-zA-Z0-9_\- ]+)[\"\']", line_content)
+		if match is not None:
+			list = match.group(1).split(' ')
+			for str in list:
+				if str != '':
+					id_list.append(str)
+		return id_list, class_list
+
 	def match_background_image(self, line_content):
 		# background: url('../img/cake.icon.png') no-repeat left;
 		match = re.search("url\(['\"]\.\./img/([a-zA-Z0-9_/\-\.]+)['\"]", line_content)
@@ -264,19 +325,55 @@ class Text:
 
 	def match_new_class(self, line_content):
 		# $my_class = new TestClass();
-		match = re.search("[$>:]([a-zA-Z0-9_]+)[ \t]+=[ \t]+new ([a-zA-Z0-9_]+)[(;]", line_content)
+		match = re.search("new ([a-zA-Z0-9_]+)[(;]", line_content)
 		if match is None:
-			return False, False
-		return match.group(2), match.group(1)
+			return False
+		return match.group(1)
 
 	def match_app_import(self, line_content):
 		# App::import('Vendor', 'Plugin.flickr/flickr');
-		match = re.search("import\(['\"][a-zA-Z0-9_]+['\"],[ \t]*['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
+		match = re.search("import\(['\"][a-zA-Z0-9_]+['\"],[ \t]*(array\()?['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
 		if match is None:
 			return False
-		split = match.group(1).split('/')
-		split = split[-1].split('.')
-		return split[-1]
+		split = match.group(2).split('.')
+		path = split[-1].split('/')
+		return path[-1]
+
+	def match_app_uses(self, line_content):
+		# App::uses('CommentComponent', 'PluginName.Controller/Component');
+		match = re.search("App::uses\(['\"]([a-zA-Z0-9]+)['\"],[ \t]*['\"]([a-zA-Z0-9/\.]+)['\"]", line_content)
+		if match is None:
+			return False
+		#split = match.group(2).split('.')
+		# split[0] : plugin
+		# split[1] : dir
+		return match.group(1)
+
+	def match_redirect_function(self, line_content):
+		# $this->redirect('/orders/thanks'));
+		# $this->redirect(array('controller' => 'orders', 'action' => 'thanks'));
+		match = re.search("redirect\((.*?)\);$", line_content)
+		if match is None:
+			return None, None
+		controller_name = None
+		action_name = None
+		content = match.group(1)
+		match = re.search("(array\(|\[)", content)
+		if match is not None:
+			match = re.search("controller['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", content)
+			if match is not None:
+				controller_name = match.group(1)
+			match = re.search("action['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", content)
+			if match is not None:
+				action_name = match.group(1)
+		else:
+			match = re.search("['\"]([a-zA-Z0-9_/]+)['\"]", content)
+			if match is not None:
+				list = match.group(1).split('/')
+				if (len(list) > 2):
+					controller_name = list[1]
+					action_name = list[2]
+		return controller_name, action_name
 
 
 
