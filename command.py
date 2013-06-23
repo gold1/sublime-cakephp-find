@@ -6,16 +6,16 @@ from path import Path
 from text import Text
 #from dump import Dump
 
-path = Path()
 
 def set_app_path(self):
+	self.path = Path()
 	self.action_name = None
 	self.lower_camelized_action_name = None
 	self.select_word = None
 	self.select_class_name = None
 	self.select_sub_name = None
 	self.select_sub_type = None
-	if not path.set_app(self.view):
+	if not self.path.set_app(self.view):
 		return False
 	return True
 
@@ -41,7 +41,7 @@ def is_file(self):
 		return False
 
 def is_controller_file(self):
-	match = path.match_controller_file(self.view)
+	match = self.path.match_controller_file(self.view)
 	if not match:
 		return False
 	self.plural_name = match
@@ -59,7 +59,7 @@ def is_controller_file(self):
 	return True
 
 def is_model_file(self):
-	match = path.match_model_file(self.view)
+	match = self.path.match_model_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -70,17 +70,17 @@ def is_model_file(self):
 
 # Theme view is not supported.
 def is_view_file(self):
-	(self.plural_name, self.action_name, view_extension) = path.match_view_file(self.view)
+	(self.plural_name, self.action_name, view_extension) = self.path.match_view_file(self.view)
 	if not self.plural_name:
 		return False
-	path.set_view_extension(view_extension)
+	self.path.set_view_extension(view_extension)
 	self.lower_camelized_action_name = Inflector().variablize(self.action_name)
 	self.singular_name = Inflector().singularize(self.plural_name)
 	self.current_file_type = "view"
 	return True
 
 def is_component_file(self):
-	match = path.match_component_file(self.view)
+	match = self.path.match_component_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -88,7 +88,7 @@ def is_component_file(self):
 	return True
 
 def is_behavior_file(self):
-	match = path.match_behavior_file(self.view)
+	match = self.path.match_behavior_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -96,7 +96,7 @@ def is_behavior_file(self):
 	return True
 
 def is_helper_file(self):
-	match = path.match_helper_file(self.view)
+	match = self.path.match_helper_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -104,28 +104,28 @@ def is_helper_file(self):
 	return True
 
 def is_layout_file(self):
-	match = path.match_layout_file(self.view)
+	match = self.path.match_layout_file(self.view)
 	if not match:
 		return False
 	self.current_file_type = "layout"
 	return True
 
 def is_css_file(self):
-	match = path.match_css_file(self.view)
+	match = self.path.match_css_file(self.view)
 	if not match:
 		return False
 	self.current_file_type = "css"
 	return True
 
 def is_plugin_file(self):
-	match = path.match_plugin_file(self.view)
+	match = self.path.match_plugin_file(self.view)
 	if not match:
 		return False
 	self.current_file_type = "plugin"
 	return True
 
 def is_controller_test_file(self):
-	match = path.match_controller_test_file(self.view)
+	match = self.path.match_controller_test_file(self.view)
 	if not match:
 		return False
 	self.plural_name = match
@@ -135,7 +135,7 @@ def is_controller_test_file(self):
 	return True
 
 def is_model_test_file(self):
-	match = path.match_model_test_file(self.view)
+	match = self.path.match_model_test_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -145,7 +145,7 @@ def is_model_test_file(self):
 	return True
 
 def is_component_test_file(self):
-	match = path.match_component_test_file(self.view)
+	match = self.path.match_component_test_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -153,7 +153,7 @@ def is_component_test_file(self):
 	return True
 
 def is_behavior_test_file(self):
-	match = path.match_behavior_test_file(self.view)
+	match = self.path.match_behavior_test_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -161,7 +161,7 @@ def is_behavior_test_file(self):
 	return True
 
 def is_helper_test_file(self):
-	match = path.match_helper_test_file(self.view)
+	match = self.path.match_helper_test_file(self.view)
 	if not match:
 		return False
 	self.singular_name = match
@@ -169,14 +169,14 @@ def is_helper_test_file(self):
 	return True
 
 def is_core_list_file(self):
-	match = path.match_core_list_file(self.view)
+	match = self.path.match_core_list_file(self.view)
 	if not match:
 		return False
 	self.current_file_type = "core"
 	return True
 
 def is_app_file(self):
-	match = path.match_app_file(self.view)
+	match = self.path.match_app_file(self.view)
 	if not match:
 		return False
 	self.current_file_type = "app"
@@ -223,9 +223,9 @@ def is_render_function(self):
 		controller_name = self.plural_name
 	if self.layout_name is not None:
 		if self.layout_name == self.select_word:
-			path.switch_to_category(self.view, 'layout', self.layout_name)
+			self.path.switch_to_category(self.view, 'layout', self.layout_name)
 			return True
-	path.switch_to_category(self.view, 'view', controller_name, self.action_name)
+	self.path.switch_to_category(self.view, 'view', controller_name, self.action_name)
 	return True
 
 def is_redirect_function(self):
@@ -234,51 +234,51 @@ def is_redirect_function(self):
 		return False
 	if controller_name is None:
 		controller_name = self.plural_name
-	file_path = path.search_class_file_all_dir(path.complete_file_name('controller', controller_name, False), self.current_file_type)
+	file_path = self.path.search_class_file_all_dir(self.path.complete_file_name('controller', controller_name, False), self.current_file_type)
 	if file_path == False:
 		return False
-	path.set_open_file_callback(Text().move_point_function, self.action_name)
-	path.switch_to_file(file_path, self.view)
+	self.path.set_open_file_callback(Text().move_point_function, self.action_name)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_layout_variable(self):
 	self.layout_name = Text().match_layout_variable(self.select_line_str)
 	if self.layout_name is None:
 		return False
-	path.switch_to_category(self.view, 'layout', self.layout_name)
+	self.path.switch_to_category(self.view, 'layout', self.layout_name)
 	return True
 
 def is_element_function(self):
 	self.element_name = Text().match_element_function(self.select_line_str)
 	if self.element_name is None:
 		return False
-	element_file_name = path.complete_file_name('element', self.element_name)
-	file_path = path.search_file_recursive(element_file_name, path.folder_path["element"])
+	element_file_name = self.path.complete_file_name('element', self.element_name)
+	file_path = self.path.search_file_recursive(element_file_name, self.path.folder_path["element"])
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_javascript_function(self):
 	self.javascript_name = Text().match_javascript_function(self.select_line_str)
 	if self.javascript_name is None:
 		return False
-	javascript_file_name = path.complete_file_name('javascript', self.javascript_name)
-	file_path = path.search_file_recursive(javascript_file_name, path.folder_path["javascript"])
+	javascript_file_name = self.path.complete_file_name('javascript', self.javascript_name)
+	file_path = self.path.search_file_recursive(javascript_file_name, self.path.folder_path["javascript"])
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_css_function(self):
 	self.css_name = Text().match_css_function(self.select_line_str)
 	if self.css_name is None:
 		return False
-	css_file_name = path.complete_file_name('css', self.css_name)
-	file_path = path.search_file_recursive(css_file_name, path.folder_path["css"])
+	css_file_name = self.path.complete_file_name('css', self.css_name)
+	file_path = self.path.search_file_recursive(css_file_name, self.path.folder_path["css"])
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_tag_id_class(self):
@@ -295,42 +295,42 @@ def is_tag_id_class(self):
 			type = 'class'
 	if name is None:
 		return False
-	list = path.get_css_list(name, type)
+	list = self.path.get_css_list(name, type)
 	if list is None:
 		return False
 	copy_word_to_find_panel(self, 'css_word')
-	path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
-	path.show_css_list(self.view, list)
+	self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
+	self.path.show_css_list(self.view, list)
 	return True
 
 def is_background_image(self):
 	image_path = Text().match_background_image(self.select_line_str)
 	if image_path is None:
 		return False
-	file_path = path.search_file_recursive(image_path, path.folder_path["image"])
+	file_path = self.path.search_file_recursive(image_path, self.path.folder_path["image"])
 	if file_path == False:
 		return False
-	path.execute(file_path)
+	self.path.execute(file_path)
 	return True
 
 def is_image_function(self):
 	image_path = Text().match_html_image(self.select_line_str)
 	if image_path is None:
 		return False
-	file_path = path.search_file_recursive(image_path, path.folder_path["image"])
+	file_path = self.path.search_file_recursive(image_path, self.path.folder_path["image"])
 	if file_path == False:
 		return False
-	path.execute(file_path)
+	self.path.execute(file_path)
 	return True
 
 def is_new_class(self):
 	self.new_class_name = Text().match_new_class(self.select_line_str)
 	if not self.new_class_name:
 		return False
-	file_path = path.search_class_file_all_dir(self.new_class_name)
+	file_path = self.path.search_class_file_all_dir(self.new_class_name)
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_class_operator(self):
@@ -339,35 +339,35 @@ def is_class_operator(self):
 	if self.select_class_name == "this":
 		file_path = self.view.file_name()
 	else:
-		file_path = path.search_class_file_all_dir(self.select_class_name, self.current_file_type)
+		file_path = self.path.search_class_file_all_dir(self.select_class_name, self.current_file_type)
 	if file_path == False:
 		return False
 	if self.select_sub_type is not None:
 		if self.select_sub_type == "function":
-			path.set_open_file_callback(Text().move_point_function, self.select_sub_name)
+			self.path.set_open_file_callback(Text().move_point_function, self.select_sub_name)
 		elif self.select_sub_type == "variable":
-			path.set_open_file_callback(Text().move_point_variable, self.select_sub_name)
-	path.switch_to_file(file_path, self.view)
+			self.path.set_open_file_callback(Text().move_point_variable, self.select_sub_name)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_app_import(self):
 	file_name = Text().match_app_import(self.select_line_str)
 	if not file_name:
 		return False
-	file_path = path.search_class_file_all_dir(file_name)
+	file_path = self.path.search_class_file_all_dir(file_name)
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_app_uses(self):
 	file_name = Text().match_app_uses(self.select_line_str)
 	if not file_name:
 		return False
-	file_path = path.search_class_file_all_dir(file_name)
+	file_path = self.path.search_class_file_all_dir(file_name)
 	if file_path == False:
 		return False
-	path.switch_to_file(file_path, self.view)
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def copy_word_to_find_panel(self, type = 'word'):
@@ -416,7 +416,7 @@ class CakeSwitchToModelCommand(sublime_plugin.TextCommand):
 		if not is_file(self):
 			sublime.status_message("Can't switch to model.")
 			return
-		path.switch_to_category(self.view, 'model', self.singular_name)
+		self.path.switch_to_category(self.view, 'model', self.singular_name)
 
 class CakeSwitchToControllerCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -426,8 +426,8 @@ class CakeSwitchToControllerCommand(sublime_plugin.TextCommand):
 			sublime.status_message("Can't switch to contoroller.")
 			return
 		if self.action_name is not None:
-			path.set_open_file_callback(Text().move_point_controller_action, self.action_name)
-		path.switch_to_category(self.view, 'controller', self.plural_name)
+			self.path.set_open_file_callback(Text().move_point_controller_action, self.action_name)
+		self.path.switch_to_category(self.view, 'controller', self.plural_name)
 
 class CakeSwitchToViewCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
@@ -436,117 +436,117 @@ class CakeSwitchToViewCommand(sublime_plugin.TextCommand):
 		if not is_file(self) or self.action_name is None:
 			sublime.status_message("Can't switch to view.")
 			return
-		path.switch_to_category(self.view, 'view', self.plural_name, self.action_name)
+		self.path.switch_to_category(self.view, 'view', self.plural_name, self.action_name)
 
 class CakeSwitchToTestCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self):
 			return
 		if is_controller_file(self):
-			path.switch_to_category(self.view, 'controller_test', self.plural_name)
+			self.path.switch_to_category(self.view, 'controller_test', self.plural_name)
 			return
 		elif is_controller_test_file(self):
-			path.switch_to_category(self.view, 'controller', self.plural_name)
+			self.path.switch_to_category(self.view, 'controller', self.plural_name)
 			return
 		elif is_model_file(self):
-			path.switch_to_category(self.view, 'model_test', self.singular_name)
+			self.path.switch_to_category(self.view, 'model_test', self.singular_name)
 			return
 		elif is_model_test_file(self):
-			path.switch_to_category(self.view, 'model', self.singular_name)
+			self.path.switch_to_category(self.view, 'model', self.singular_name)
 			return
 		elif is_component_file(self):
-			path.switch_to_category(self.view, 'component_test', self.singular_name)
+			self.path.switch_to_category(self.view, 'component_test', self.singular_name)
 			return
 		elif is_component_test_file(self):
-			path.switch_to_category(self.view, 'component', self.singular_name)
+			self.path.switch_to_category(self.view, 'component', self.singular_name)
 			return
 		elif is_behavior_file(self):
-			path.switch_to_category(self.view, 'behavior_test', self.singular_name)
+			self.path.switch_to_category(self.view, 'behavior_test', self.singular_name)
 			return
 		elif is_behavior_test_file(self):
-			path.switch_to_category(self.view, 'behavior', self.singular_name)
+			self.path.switch_to_category(self.view, 'behavior', self.singular_name)
 			return
 		elif is_helper_file(self):
-			path.switch_to_category(self.view, 'helper_test', self.singular_name)
+			self.path.switch_to_category(self.view, 'helper_test', self.singular_name)
 			return
 		elif is_helper_test_file(self):
-			path.switch_to_category(self.view, 'helper', self.singular_name)
+			self.path.switch_to_category(self.view, 'helper', self.singular_name)
 			return
 		sublime.status_message("Can't switch to testcase.")
 
 class CakeShowDirectoryListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.get_this_dir(self.view), self.view)
+		self.path.show_dir_list(self.path.get_this_dir(self.view), self.view)
 
 class CakeShowControllerListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["controller"], self.view)
+		self.path.show_dir_list(self.path.folder_path["controller"], self.view)
 
 class CakeShowModelListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["model"], self.view)
+		self.path.show_dir_list(self.path.folder_path["model"], self.view)
 
 class CakeShowViewListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["view"], self.view)
+		self.path.show_dir_list(self.path.folder_path["view"], self.view)
 
 class CakeShowComponentListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["component"], self.view)
+		self.path.show_dir_list(self.path.folder_path["component"], self.view)
 
 class CakeShowBehaviorListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["behavior"], self.view)
+		self.path.show_dir_list(self.path.folder_path["behavior"], self.view)
 
 class CakeShowHelperListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["helper"], self.view)
+		self.path.show_dir_list(self.path.folder_path["helper"], self.view)
 
 class CakeShowLibListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["lib"], self.view)
+		self.path.show_dir_list(self.path.folder_path["lib"], self.view)
 
 class CakeShowLayoutListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["layout"], self.view)
+		self.path.show_dir_list(self.path.folder_path["layout"], self.view)
 
 class CakeShowCssListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["css"], self.view)
+		self.path.show_dir_list(self.path.folder_path["css"], self.view)
 
 class CakeShowJavascriptListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["javascript"], self.view)
+		self.path.show_dir_list(self.path.folder_path["javascript"], self.view)
 
 class CakeShowElementListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["element"], self.view)
+		self.path.show_dir_list(self.path.folder_path["element"], self.view)
 
 class CakeShowConfigListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["config"], self.view)
+		self.path.show_dir_list(self.path.folder_path["config"], self.view)
 
 class CakeShowPluginListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["plugin"], self.view)
+		self.path.show_dir_list(self.path.folder_path["plugin"], self.view)
 
 class CakeShowTestListCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		if not set_app_path(self): return
-		path.show_dir_list(path.folder_path["test"], self.view)
+		self.path.show_dir_list(self.path.folder_path["test"], self.view)
 
 
