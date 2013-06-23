@@ -3,8 +3,14 @@
 import sublime, sublime_plugin
 import re
 import time
-from sel import Sel
-from inflector import Inflector
+from sublime_cakephp_find_inflector import Inflector
+
+
+class Sel:
+	def __init__(self):
+		self.type = None
+		self.word = ""
+
 
 class Text:
 	def __init__(self):

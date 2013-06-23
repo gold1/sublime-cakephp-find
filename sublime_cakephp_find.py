@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import sublime, sublime_plugin
-from inflector import Inflector
-from path import Path
-from text import Text
+from sublime_cakephp_find_inflector import Inflector
+from sublime_cakephp_find_path import Path
+from sublime_cakephp_find_text import Text
 #from dump import Dump
 
 
