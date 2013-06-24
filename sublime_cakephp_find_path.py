@@ -282,7 +282,7 @@ class Path:
 		if self.major_version == 1:
 			regexp = (self.folder_path['model_test'] + "([^/]+)\.test\.php")
 		elif self.major_version == 2:
-			regexp = (self.folder_path['model_test'] + "/([^/]+)Test\.php")
+			regexp = (self.folder_path['model_test'] + "([^/]+)Test\.php")
 		match = self.match(regexp, self.convert_file_path(view))
 		if (match == False or
 			self.match_behavior_file(view) != False):
