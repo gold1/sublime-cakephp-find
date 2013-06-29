@@ -340,13 +340,18 @@ class Text:
 		return match.group(1)
 
 	def match_app_import(self, line_content):
-		# App::import('Vendor', 'Plugin.flickr/flickr');
-		match = re.search("import\(['\"][a-zA-Z0-9_]+['\"],[ \t]*(array\()?['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
+		# App::import('Model', 'DebugKit.ToolbarAccess');
+		match = re.search("import\(['\"]([a-zA-Z0-9_]+)['\"],[ \t]*(array\()?['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
 		if match is None:
-			return False
-		split = match.group(2).split('.')
-		path = split[-1].split('/')
-		return path[-1]
+			return False, False, False
+		folder_name = match.group(1)
+		split = match.group(3).split('.')
+		if len(split) > 1:
+			plugin_name = split[0]
+		else:
+			plugin_name = None
+		file_name = split[-1]
+		return plugin_name, folder_name, file_name
 
 	def match_app_uses(self, line_content):
 		# App::uses('CommentComponent', 'PluginName.Controller/Component');

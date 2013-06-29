@@ -151,9 +151,9 @@ class Path:
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
 				self.dir_path['core_view'] = "view/"
-				self.dir_path['core_component'] = "controllers/components/"
-				self.dir_path['core_model'] = "models/behaviors/"
-				self.dir_path['core_helper'] = "views/helpers/"
+				self.dir_path['core_component'] = "controller/components/"
+				self.dir_path['core_model'] = "model/behaviors/"
+				self.dir_path['core_helper'] = "view/helpers/"
 				self.dir_path['core_lib'] = ""
 		elif self.major_version == 2:
 			self.dir_path['config'] = "Config/"
@@ -780,6 +780,15 @@ class Path:
 		selected = self.css_list[result][0]
 		self.switch_to_file(self.folder_path['css'] + selected, self.show_list_view)
 
-	def get_plugin_path(self, plugin_name, category, file_name):
-		#path = self.folder_path['plugin'] + plugin_name + 
-		return ''
+	def get_category_path(self, category, plugin_name = False, options = {}):
+		if options.has_key('core'):
+			if self.dir_path.has_key('core_' + category): return False
+			return self.folder_path['core_' + category]
+		if options.has_key('test'):
+			if self.dir_path.has_key(category + '_test'): return False
+			return self.folder_path[category + '_test']
+
+		if self.dir_path.has_key(category): return False
+		if plugin_name:
+			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
+		return self.folder_path['app'] + self.dir_path[category]

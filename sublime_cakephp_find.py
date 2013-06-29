@@ -358,12 +358,13 @@ def is_class_operator(self):
 	return True
 
 def is_app_import(self):
-	file_name = Text().match_app_import(self.select_line_str)
+	(plugin_name, folder_name, file_name) = Text().match_app_import(self.select_line_str)
 	if not file_name:
 		return False
-	file_path = self.path.search_class_file_all_dir(file_name)
-	if file_path == False:
+	category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
+	if category_path == False:
 		return False
+	file_path = category_path + file_name + ".php"
 	self.path.switch_to_file(file_path, self.view)
 	return True
 
