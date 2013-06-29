@@ -354,14 +354,19 @@ class Text:
 		return plugin_name, folder_name, file_name
 
 	def match_app_uses(self, line_content):
-		# App::uses('CommentComponent', 'PluginName.Controller/Component');
+		# App::uses('TimedBehavior', 'DebugKit.Model/Behavior');
 		match = re.search("App::uses\(['\"]([a-zA-Z0-9]+)['\"],[ \t]*['\"]([a-zA-Z0-9/\.]+)['\"]", line_content)
 		if match is None:
-			return False
-		#split = match.group(2).split('.')
-		# split[0] : plugin
-		# split[1] : dir
-		return match.group(1)
+			return False, False, False
+		file_name = match.group(1)
+		split = match.group(2).split('.')
+		if len(split) > 1:
+			plugin_name = split[0]
+		else:
+			plugin_name = None
+		folder_split = split[-1].split('/')
+		folder_name = folder_split[-1]
+		return plugin_name, folder_name, file_name
 
 	def match_redirect_function(self, line_content):
 		# $this->redirect('/orders/thanks'));
