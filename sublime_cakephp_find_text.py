@@ -245,37 +245,62 @@ class Text:
 		# $this->render("view") or
 		# $this->render("view", "layout") or
 		# $this->render('/Elements/ajaxreturn');
-		match = re.search("render\((\"|\')([a-zA-Z0-9_/]+)(\"|\')(,[ \t]*(\"|\')([a-zA-Z0-9_]+)(\"|\'))?", line_content)
+		# $this->render("DebugKit.ToolbarAccess/history_state");
+		match = re.search("render\(['\"]([a-zA-Z0-9_/\.]+)['\"](,[ \t]*['\"]([a-zA-Z0-9_]+)['\"])?", line_content)
 		if match is None:
-			return None, None, None
+			return False, False, False, False
 		layout_name = None
-		if match.group(6) is not None:
-			layout_name = match.group(6)
-		controller_name = None
-		view = match.group(2)
-		if view[0:1] == '/':
-			list = view[1:].split('/')
-			controller_name = list[0]
-			view_name = list[1]
+		if match.group(3) is not None:
+			layout_name = match.group(3)
+		split = match.group(1).split('.')
+		if len(split) > 1:
+			plugin_name = split[0]
+			split = split[1].split('/')
+			controller_name = split[0]
+			view_name = '/'.join(split[1:])
 		else:
-			view_name = view
-		return controller_name, view_name, layout_name
+			plugin_name = False
+			view = split[-1]
+			if view[0:1] == '/':
+				view = view[1:]
+				split = view.split('/')
+				controller_name = split[0]
+				view_name = '/'.join(split[1:])
+			else:
+				controller_name = False
+				view_name = view
+		return plugin_name, controller_name, view_name, layout_name
 
 	def match_layout_variable(self, line_content):
 		# public $layout = "default";
 		# ->layout = "default";
-		match = re.search("(\$|\-\>)layout[ \t]*=[ \t]*(\"|\')([a-zA-Z0-9\-_]+)(\"|\')", line_content)
+		# ->layout = "TwitterBootstrap.default";
+		match = re.search("(\$|\-\>)layout[ \t]*=[ \t]*(\"|\')([a-zA-Z0-9_\.]+)(\"|\')", line_content)
 		if match is None:
-			return None
-		return match.group(3)
+			return None, None
+		split = match.group(3).split('.')
+		if len(split) > 1:
+			plugin_name = split[0]
+		else:
+			plugin_name = None
+		file_name = split[-1]
+		print(plugin_name, file_name)
+		return plugin_name, file_name
 
 	def match_element_function(self, line_content):
 		# renderElement("photo")
 		# element("photo")
-		match = re.search("(renderElement|element)\([\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
+		# element("DebugKit.log_panel");
+		match = re.search("(renderElement|element)\([\"\']([a-zA-Z0-9_/\.]+)[\"\']", line_content)
 		if match is None:
-			return None
-		return match.group(2)
+			return None, None
+		split = match.group(2).split('.')
+		if len(split) > 1:
+			plugin_name = split[0]
+		else:
+			plugin_name = None
+		file_name = split[-1]
+		return plugin_name, file_name
 
 	def match_javascript_function(self, line_content):
 		# $javascript->link("window");

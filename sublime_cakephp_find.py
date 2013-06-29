@@ -223,16 +223,21 @@ def is_word_any_file(self):
 	return False
 
 def is_render_function(self):
-	(controller_name, self.action_name, self.layout_name) = Text().match_render_function(self.select_line_str)
-	if self.action_name is None:
+	(plugin_name, controller_name, view_name, self.layout_name) = Text().match_render_function(self.select_line_str)
+	if not view_name:
 		return False
-	if controller_name is None:
-		controller_name = self.plural_name
-	if self.layout_name is not None:
+	if self.layout_name:
 		if self.layout_name == self.select_word:
 			self.path.switch_to_category(self.view, 'layout', self.layout_name)
 			return True
-	self.path.switch_to_category(self.view, 'view', controller_name, self.action_name)
+	if not controller_name:
+		controller_name = self.plural_name
+	view_file_name = self.path.complete_file_name('view', view_name)
+	category_path = self.path.get_category_path('view', plugin_name)
+	if not category_path:
+		return False
+	file_path = category_path + controller_name + "/" + view_file_name
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_redirect_function(self):
@@ -249,20 +254,26 @@ def is_redirect_function(self):
 	return True
 
 def is_layout_variable(self):
-	self.layout_name = Text().match_layout_variable(self.select_line_str)
+	(plugin_name, self.layout_name) = Text().match_layout_variable(self.select_line_str)
 	if self.layout_name is None:
 		return False
-	self.path.switch_to_category(self.view, 'layout', self.layout_name)
+	layout_file_name = self.path.complete_file_name('layout', self.layout_name)
+	category_path = self.path.get_category_path('layout', plugin_name)
+	if category_path == False:
+		return False
+	file_path = category_path + layout_file_name
+	self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_element_function(self):
-	self.element_name = Text().match_element_function(self.select_line_str)
+	(plugin_name, self.element_name) = Text().match_element_function(self.select_line_str)
 	if self.element_name is None:
 		return False
 	element_file_name = self.path.complete_file_name('element', self.element_name)
-	file_path = self.path.search_file_recursive(element_file_name, self.path.folder_path["element"])
-	if file_path == False:
+	category_path = self.path.get_category_path('element', plugin_name)
+	if category_path == False:
 		return False
+	file_path = category_path + element_file_name
 	self.path.switch_to_file(file_path, self.view)
 	return True
 
@@ -370,6 +381,8 @@ def is_app_import(self):
 
 def is_app_uses(self):
 	(plugin_name, folder_name, file_name) = Text().match_app_uses(self.select_line_str)
+	if file_name == False:
+		return False
 	category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
 	if category_path == False:
 		return False

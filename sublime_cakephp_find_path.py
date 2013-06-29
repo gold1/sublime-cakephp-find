@@ -788,7 +788,7 @@ class Path:
 			if self.dir_path.has_key(category + '_test'): return False
 			return self.folder_path[category + '_test']
 
-		if self.dir_path.has_key(category): return False
+		if not self.dir_path.has_key(category): return False
 		if plugin_name:
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
