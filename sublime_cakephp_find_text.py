@@ -44,6 +44,7 @@ class Text:
 		select_word = view.substr(select_region)
 		select_css_tag_region = self.get_css_tag_word_region(view, select_region)
 		select_css_tag_word = view.substr(select_css_tag_region)
+		enclosed_word = self.get_enclosed_word(view, select_region)
 		if re.search("(->|::)", select_word) is not None:
 			# get left word
 			select_region = view.word(sublime.Region(select_region.a - 1, select_region.a))
@@ -51,7 +52,9 @@ class Text:
 		self.sel_list = []
 		self.get_word_operator_info(view, select_region, 0, True)
 		(select_class_name, select_sub_name, select_sub_type) = self.get_cursol_class_info()
-		return select_word, select_css_tag_word, select_region, select_css_tag_region, select_line_str, select_class_name, select_sub_name, select_sub_type
+		return (select_word, select_css_tag_word, select_region,
+			select_css_tag_region, select_line_str, select_class_name,
+			select_sub_name, select_sub_type, enclosed_word)
 
 	def get_word_operator_info(self, view, region, direction, select_word_flag = False):
 		word = view.substr(region)
@@ -73,7 +76,7 @@ class Text:
 		elif re.search("^(->|::)", right_operator) is not None:
 			right_type = "object"
 			right_region = view.word(sublime.Region(region.end() + 2, region.end() + 3))
-		elif re.search("^[\r\n{ \t'\"]", right_operator) is not None:
+		elif re.search("^[\r\n{ \t]", right_operator) is not None:
 			right_type = "string"
 		else:
 			right_type = None
@@ -90,8 +93,6 @@ class Text:
 		elif re.search("(->|::)$", left_operator) is not None:
 			left_type = "object"
 			left_region = view.word(sublime.Region(region.begin() - 3, region.begin() - 2))
-		elif re.search("['\"]$", left_operator) is not None:
-			left_type = "string"
 		else:
 			left_type = None
 
@@ -110,9 +111,6 @@ class Text:
 				sel.word = new_class_name
 		elif right_type == "object":
 			type = "object"
-		elif (right_type == "string" and
-			(left_type == "string" or left_type == "class")):
-			type = "string"
 		else:
 			type = None
 
@@ -194,6 +192,32 @@ class Text:
 				break
 			before_region = new_region
 		return before_region
+
+	def get_enclosed_word(self, view, region):
+		before_region = region
+		# left
+		while True:
+			new_region = sublime.Region(before_region.a - 1, before_region.b)
+			word = view.substr(new_region)
+			match = re.search("^[^a-zA-Z0-9\_\.]", word)
+			if match is not None:
+				before_word = word[0:1]
+				break
+			before_region = new_region
+		# right
+		while True:
+			new_region = sublime.Region(before_region.a, before_region.b + 1)
+			word = view.substr(new_region)
+			match = re.search("[^a-zA-Z0-9\_\.]$", word)
+			if match is not None:
+				after_word = word[-1]
+				break
+			before_region = new_region
+
+		if (before_word == after_word and
+			before_word == '"' or before_word == "'"):
+			return view.substr(before_region)
+		return False
 
 	def move_point_controller_action(self, view, arg):
 		(action_name, ) = arg
@@ -284,7 +308,6 @@ class Text:
 		else:
 			plugin_name = None
 		file_name = split[-1]
-		print(plugin_name, file_name)
 		return plugin_name, file_name
 
 	def match_element_function(self, line_content):
@@ -374,7 +397,7 @@ class Text:
 		if len(split) > 1:
 			plugin_name = split[0]
 		else:
-			plugin_name = None
+			plugin_name = False
 		file_name = split[-1]
 		return plugin_name, folder_name, file_name
 

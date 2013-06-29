@@ -536,17 +536,62 @@ class Path:
 			file_name = Inflector().underscore(search_class_name)
 		elif self.major_version == 2:
 			file_name = search_class_name
-		dir_list = ["lib", "vendor", "component", "helper", "behavior", "controller", "model", "plugin"]
+		dir_list = ["lib", "vendor", "view", "controller", "model", "authenticate"]
 		for dir_name in dir_list:
 			file_path = self.search_file_recursive(file_name + ".php", self.folder_path[dir_name])
 			if file_path:
 				return file_path
 
+		dir_list = self.get_search_add_dir_list(current_file_type)
+		if current_file_type == 'view' or current_file_type == 'helper':
+			search_class_name = self.modify_helper_class_name(search_class_name)
+		for class_type in dir_list:
+			file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.folder_path[class_type])
+			if file_path: return file_path
+
+		self.search_class_file_plugin_all(search_class_name, current_file_type)
+
 		if self.folder_path['core'] is not None:
 			self.set_core_list()
 			file_path = self.search_core_file_recursive(file_name, self.core_list, self.folder_path['core_list_root'])
-			if file_path: return file_path
+			if file_path:
+				return file_path
+			for class_type in dir_list:
+				file_path = self.search_core_file_recursive(self.complete_core_list_name(class_type, file_name), self.core_list, self.folder_path['core_list_root'])
+				if file_path: return file_path
+		return False
 
+	def search_class_file_plugin_all(self, search_class_name, current_file_type=None, plugin_name = None):
+		if self.major_version == 1:
+			file_name = Inflector().underscore(search_class_name)
+		elif self.major_version == 2:
+			file_name = search_class_name
+
+		file_path = self.search_plugin_file(file_name + ".php", plugin_name)
+		if file_path:
+			return file_path
+
+		list = self.get_search_add_dir_list(current_file_type)
+		if current_file_type == 'view' or current_file_type == 'helper':
+			search_class_name = self.modify_helper_class_name(search_class_name)
+		for class_type in list:
+			file_path = self.search_plugin_file(self.complete_file_name(class_type, search_class_name), plugin_name)
+			if file_path: return file_path
+		return False
+
+	def search_core_file_recursive(self, search_file_name, content_dict, root):
+		for class_name, file_name in content_dict.items():
+			if class_name[0:1] == '>':
+				file_path = self.search_core_file_recursive(search_file_name, file_name['c'], root + file_name['n'] + '/')
+				if file_path: return file_path
+			elif search_file_name == class_name:
+				if file_name == '':
+					return root + class_name + '.php'
+				else:
+					return root + file_name
+		return False
+
+	def get_search_add_dir_list(self, current_file_type = None):
 		list = ["component", "helper", "behavior", "authenticate"]
 		if current_file_type is not None:
 			# sort list
@@ -561,29 +606,36 @@ class Path:
 			if change_file_type is not None:
 				list.remove(change_file_type)
 				list.insert(0, change_file_type)
-			# change class name : $form->input() -> $Form->input()
-			if change_file_type == 'helper' and re.match('^[a-z]', search_class_name) is not None:
-				search_class_name = search_class_name[0:1].upper() + search_class_name[1:len(search_class_name)]
-		for class_type in list:
-			file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.folder_path[class_type])
-			if file_path: return file_path
+		return list
 
-		if self.folder_path['core'] is not None:
-			for class_type in list:
-				file_path = self.search_core_file_recursive(self.complete_core_list_name(class_type, file_name), self.core_list, self.folder_path['core_list_root'])
-				if file_path: return file_path
-		return False
+	def modify_helper_class_name(self, class_name):
+		# change class name : $form->input() -> $Form->input()
+		if re.match('^[a-z]', class_name) is not None:
+			class_name = class_name[0:1].upper() + class_name[1:len(class_name)]
+		return class_name
 
-	def search_core_file_recursive(self, search_file_name, content_dict, root):
-		for class_name, file_name in content_dict.items():
-			if class_name[0:1] == '>':
-				file_path = self.search_core_file_recursive(search_file_name, file_name['c'], root + file_name['n'] + '/')
-				if file_path: return file_path
-			elif search_file_name == class_name:
-				if file_name == '':
-					return root + class_name + '.php'
-				else:
-					return root + file_name
+	def search_plugin_file(self, search_file_name, plugin_name = None):
+		#file_path = self.search_file_recursive(search_file_name, self.folder_path['plugin'])
+		root = self.folder_path['plugin']
+		list = os.listdir(root)
+		for name in list:
+			if os.path.isfile(root + name):
+				continue
+			if plugin_name is not None and plugin_name != name:
+				continue
+			if os.path.isdir(root + name):
+				dir_path = root + name + "/"
+				sub_dir_list = [
+					'Controller/',
+					'Lib/',
+					'Model/',
+					'View/Helper/',
+					'Vendor/',
+				]
+				for sub_dir_name in sub_dir_list:
+					file_path = self.search_file_recursive(search_file_name, dir_path + sub_dir_name)
+					if file_path:
+						return file_path
 		return False
 
 	def complete_file_name(self, type, name, ext_flag = True):

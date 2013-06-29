@@ -218,6 +218,7 @@ def is_word_any_file(self):
 	if (is_app_import(self) or
 		is_app_uses(self) or
 		is_new_class(self) or
+		is_enclosed_word(self) or
 		is_class_operator(self)):
 		return True
 	return False
@@ -345,8 +346,23 @@ def is_new_class(self):
 	self.new_class_name = Text().match_new_class(self.select_line_str)
 	if not self.new_class_name:
 		return False
-	file_path = self.path.search_class_file_all_dir(self.new_class_name)
+	file_path = self.path.search_class_file_all_dir(self.new_class_name, self.current_file_type)
 	if file_path == False:
+		return False
+	self.path.switch_to_file(file_path, self.view)
+	return True
+
+def is_enclosed_word(self):
+	if not self.enclosed_word:
+		return False
+	split = self.enclosed_word.split('.')
+	class_name = split[-1]
+	if len(split) > 1:
+		plugin_name = split[0]
+		file_path = self.path.search_class_file_plugin_all(class_name, self.current_file_type, plugin_name)
+	else:
+		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)
+	if not file_path:
 		return False
 	self.path.switch_to_file(file_path, self.view)
 	return True
@@ -372,22 +388,34 @@ def is_app_import(self):
 	(plugin_name, folder_name, file_name) = Text().match_app_import(self.select_line_str)
 	if not file_name:
 		return False
-	category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
-	if category_path == False:
-		return False
-	file_path = category_path + file_name + ".php"
-	self.path.switch_to_file(file_path, self.view)
+	if plugin_name and folder_name:
+		category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
+		if not category_path:
+			return False
+		file_path = category_path + file_name + ".php"
+		self.path.switch_to_file(file_path, self.view)
+	else:
+		file_path = self.path.search_class_file_all_dir(file_name, self.current_file_type)
+		if not file_path:
+			return False
+		self.path.switch_to_file(file_path, self.view)
 	return True
 
 def is_app_uses(self):
 	(plugin_name, folder_name, file_name) = Text().match_app_uses(self.select_line_str)
-	if file_name == False:
+	if not file_name:
 		return False
-	category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
-	if category_path == False:
-		return False
-	file_path = category_path + file_name + ".php"
-	self.path.switch_to_file(file_path, self.view)
+	if plugin_name and folder_name:
+		category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
+		if not category_path:
+			return False
+		file_path = category_path + file_name + ".php"
+		self.path.switch_to_file(file_path, self.view)
+	else:
+		file_path = self.path.search_class_file_all_dir(file_name, self.current_file_type)
+		if not file_path:
+			return False
+		self.path.switch_to_file(file_path, self.view)
 	return True
 
 def copy_word_to_find_panel(self, type = 'word'):
@@ -410,7 +438,7 @@ class CakeFindCommand(sublime_plugin.TextCommand):
 			return
 		(self.select_word, self.select_css_tag_word, self.select_word_region,
 			self.select_css_tag_region, self.select_line_str, self.select_class_name,
-			self.select_sub_name, self.select_sub_type) = Text().get_cursol_info(self.view)
+			self.select_sub_name, self.select_sub_type, self.enclosed_word) = Text().get_cursol_info(self.view)
 
 		found = False
 		if self.current_file_type == "controller":
