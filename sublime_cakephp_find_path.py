@@ -9,7 +9,10 @@ import time
 import subprocess
 import threading
 import functools
-from sublime_cakephp_find_inflector import Inflector
+if sublime.version().startswith('3'):
+	from .sublime_cakephp_find_inflector import Inflector
+elif sublime.version().startswith('2'):
+	from sublime_cakephp_find_inflector import Inflector
 
 
 class CommandThread(threading.Thread):
@@ -36,7 +39,7 @@ class CommandThread(threading.Thread):
 			elif os.name == "nt": # windows
 				output = os.startfile(self.command)
 			self.timeout(callback, output)
-		except subprocess.CalledProcessError, e:
+		except (subprocess.CalledProcessError, e):
 			self.timeout(callback, e.returncode)
 		except:
 			self.timeout(callback, "Error.")
@@ -531,7 +534,7 @@ class Path:
 		return False
 
 	def search_core_file_recursive(self, search_file_name, content_dict, root):
-		for class_name, file_name in content_dict.iteritems():
+		for class_name, file_name in content_dict.items():
 			if class_name[0:1] == '>':
 				file_path = self.search_core_file_recursive(search_file_name, file_name['c'], root + file_name['n'] + '/')
 				if file_path: return file_path

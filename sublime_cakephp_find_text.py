@@ -3,7 +3,10 @@
 import sublime, sublime_plugin
 import re
 import time
-from sublime_cakephp_find_inflector import Inflector
+if sublime.version().startswith('3'):
+	from .sublime_cakephp_find_inflector import Inflector
+elif sublime.version().startswith('2'):
+	from sublime_cakephp_find_inflector import Inflector
 
 
 class Sel:
