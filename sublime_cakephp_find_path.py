@@ -50,6 +50,7 @@ class Path:
 		return
 
 	def set_app(self, view):
+		self.dir_path = {}
 		self.folder_path = {}
 		self.folder_path['core'] = None
 		self.folder_path['core_list_root'] = None
@@ -122,65 +123,105 @@ class Path:
 		return None
 
 	def set_folder_path(self):
-		self.folder_path['authenticate'] = self.folder_path['app'] + "Controller/Component/Auth/"
-		self.folder_path['css'] = self.folder_path['app'] + "webroot/css/"
-		self.folder_path['javascript'] = self.folder_path['app'] + "webroot/js/"
-		self.folder_path['image'] = self.folder_path['app'] + "webroot/img/"
+		self.dir_path['authenticate'] = "Controller/Component/Auth/"
+		self.dir_path['css'] = "webroot/css/"
+		self.dir_path['javascript'] = "webroot/js/"
+		self.dir_path['image'] = "webroot/img/"
 
 		if self.major_version == 1:
-			self.folder_path['config'] = self.folder_path['app'] + "config/"
-			self.folder_path['controller'] = self.folder_path['app'] + "controllers/"
-			self.folder_path['model'] = self.folder_path['app'] + "models/"
-			self.folder_path['view'] = self.folder_path['app'] + "views/"
-			self.folder_path['component'] = self.folder_path['app'] + "controllers/components/"
-			self.folder_path['behavior'] = self.folder_path['app'] + "models/behaviors/"
-			self.folder_path['helper'] = self.folder_path['app'] + "views/helpers/"
-			self.folder_path['lib'] = self.folder_path['app'] + "libs/"
-			self.folder_path['vendor'] = self.folder_path['app'] + "vendors/"
-			self.folder_path['layout'] = self.folder_path['app'] + "views/layouts/"
-			self.folder_path['element'] = self.folder_path['app'] + "views/elements/"
-			self.folder_path['plugin'] = self.folder_path['app'] + "plugins/"
-			self.folder_path['test'] = self.folder_path['app'] + "tests/cases/"
-			self.folder_path['controller_test'] = self.folder_path['app'] + "tests/cases/controllers/"
-			self.folder_path['model_test'] = self.folder_path['app'] + "tests/cases/models/"
-			self.folder_path['component_test'] = self.folder_path['app'] + "tests/cases/components/"
-			self.folder_path['behavior_test'] = self.folder_path['app'] + "tests/cases/behaviors/"
-			self.folder_path['helper_test'] = self.folder_path['app'] + "tests/cases/helpers/"
+			self.dir_path['config'] = "config/"
+			self.dir_path['controller'] = "controllers/"
+			self.dir_path['model'] = "models/"
+			self.dir_path['view'] = "views/"
+			self.dir_path['component'] = "controllers/components/"
+			self.dir_path['behavior'] = "models/behaviors/"
+			self.dir_path['helper'] = "views/helpers/"
+			self.dir_path['lib'] = "libs/"
+			self.dir_path['vendor'] = "vendors/"
+			self.dir_path['layout'] = "views/layouts/"
+			self.dir_path['element'] = "views/elements/"
+			self.dir_path['plugin'] = "plugins/"
+			self.dir_path['test'] = "tests/cases/"
+			self.dir_path['controller_test'] = "tests/cases/controllers/"
+			self.dir_path['model_test'] = "tests/cases/models/"
+			self.dir_path['component_test'] = "tests/cases/components/"
+			self.dir_path['behavior_test'] = "tests/cases/behaviors/"
+			self.dir_path['helper_test'] = "tests/cases/helpers/"
 			if self.folder_path['core'] is not None:
-				self.folder_path['core_controller'] = self.folder_path['core'] + "controller/"
-				self.folder_path['core_model'] = self.folder_path['core'] + "model/"
-				self.folder_path['core_view'] = self.folder_path['core'] + "view/"
-				self.folder_path['core_component'] = self.folder_path['core'] + "controllers/components/"
-				self.folder_path['core_behavior'] = self.folder_path['core'] + "models/behaviors/"
-				self.folder_path['core_helper'] = self.folder_path['core'] + "views/helpers/"
-				self.folder_path['core_lib'] = self.folder_path['core'] + ""
+				self.dir_path['core_controller'] = "controller/"
+				self.dir_path['core_model'] = "model/"
+				self.dir_path['core_view'] = "view/"
+				self.dir_path['core_component'] = "controllers/components/"
+				self.dir_path['core_model'] = "models/behaviors/"
+				self.dir_path['core_helper'] = "views/helpers/"
+				self.dir_path['core_lib'] = ""
 		elif self.major_version == 2:
-			self.folder_path['config'] = self.folder_path['app'] + "Config/"
-			self.folder_path['controller'] = self.folder_path['app'] + "Controller/"
-			self.folder_path['model'] = self.folder_path['app'] + "Model/"
-			self.folder_path['view'] = self.folder_path['app'] + "View/"
-			self.folder_path['component'] = self.folder_path['app'] + "Controller/Component/"
-			self.folder_path['behavior'] = self.folder_path['app'] + "Model/Behavior/"
-			self.folder_path['helper'] = self.folder_path['app'] + "View/Helper/"
-			self.folder_path['lib'] = self.folder_path['app'] + "Lib/"
-			self.folder_path['vendor'] = self.folder_path['app'] + "Vendor/"
-			self.folder_path['layout'] = self.folder_path['app'] + "View/Layouts/"
-			self.folder_path['element'] = self.folder_path['app'] + "View/Elements/"
-			self.folder_path['plugin'] = self.folder_path['app'] + "Plugin/"
-			self.folder_path['test'] = self.folder_path['app'] + "Test/Case/"
-			self.folder_path['controller_test'] = self.folder_path['app'] + "Test/Case/Controller/"
-			self.folder_path['model_test'] = self.folder_path['app'] + "Test/Case/Model/"
-			self.folder_path['component_test'] = self.folder_path['app'] + "Test/Case/Controller/Component/"
-			self.folder_path['behavior_test'] = self.folder_path['app'] + "Test/Case/Model/Behavior/"
-			self.folder_path['helper_test'] = self.folder_path['app'] + "Test/Case/View/Helper/"
+			self.dir_path['config'] = "Config/"
+			self.dir_path['controller'] = "Controller/"
+			self.dir_path['model'] = "Model/"
+			self.dir_path['view'] = "View/"
+			self.dir_path['component'] = "Controller/Component/"
+			self.dir_path['behavior'] = "Model/Behavior/"
+			self.dir_path['helper'] = "View/Helper/"
+			self.dir_path['lib'] = "Lib/"
+			self.dir_path['vendor'] = "Vendor/"
+			self.dir_path['layout'] = "View/Layouts/"
+			self.dir_path['element'] = "View/Elements/"
+			self.dir_path['plugin'] = "Plugin/"
+			self.dir_path['test'] = "Test/Case/"
+			self.dir_path['controller_test'] = "Test/Case/Controller/"
+			self.dir_path['model_test'] = "Test/Case/Model/"
+			self.dir_path['component_test'] = "Test/Case/Controller/Component/"
+			self.dir_path['behavior_test'] = "Test/Case/Model/Behavior/"
+			self.dir_path['helper_test'] = "Test/Case/View/Helper/"
 			if self.folder_path['core'] is not None:
-				self.folder_path['core_controller'] = self.folder_path['core'] + "Controller/"
-				self.folder_path['core_model'] = self.folder_path['core'] + "Model/"
-				self.folder_path['core_view'] = self.folder_path['core'] + "View/"
-				self.folder_path['core_component'] = self.folder_path['core'] + "Conroller/Component/"
-				self.folder_path['core_behavior'] = self.folder_path['core'] + "Model/Behavior/"
-				self.folder_path['core_helper'] = self.folder_path['core'] + "View/Helper/"
-				self.folder_path['core_lib'] = self.folder_path['core'] + "Utility/"
+				self.dir_path['core_controller'] = "Controller/"
+				self.dir_path['core_model'] = "Model/"
+				self.dir_path['core_view'] = "View/"
+				self.dir_path['core_component'] = "Controller/Component/"
+				self.dir_path['core_behavior'] = "Model/Behavior/"
+				self.dir_path['core_helper'] = "View/Helper/"
+				self.dir_path['core_lib'] = "Utility/"
+
+		list = [
+			'authenticate',
+			'css',
+			'javascript',
+			'image',
+			# common
+			'config',
+			'controller',
+			'model',
+			'view',
+			'component',
+			'behavior',
+			'helper',
+			'lib',
+			'vendor',
+			'layout',
+			'element',
+			'plugin',
+			'test',
+			# test
+			'controller_test',
+			'model_test',
+			'component_test',
+			'behavior_test',
+			'helper_test',
+		]
+		for category in list:
+			self.folder_path[category] = self.folder_path['app'] + self.dir_path[category]
+		list = [
+			'core_controller',
+			'core_model',
+			'core_view',
+			'core_component',
+			'core_behavior',
+			'core_helper',
+			'core_lib',
+		]
+		for category in list:
+			self.folder_path[category] = self.folder_path['core'] + self.dir_path[category]
 
 	def get_this_dir(self, view):
 		return os.path.dirname(self.convert_file_path(view))
@@ -738,3 +779,7 @@ class Path:
 		# open file
 		selected = self.css_list[result][0]
 		self.switch_to_file(self.folder_path['css'] + selected, self.show_list_view)
+
+	def get_plugin_path(self, plugin_name, category, file_name):
+		#path = self.folder_path['plugin'] + plugin_name + 
+		return ''
