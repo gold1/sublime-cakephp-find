@@ -15,6 +15,28 @@ elif sublime.version().startswith('2'):
 	from sublime_cakephp_find_inflector import Inflector
 
 
+class CakephpFindCoreList:
+	def __init__(self):
+		self.set_core_list()
+		return
+
+	def set_core_list(self):
+		self.core_list = {}
+		list = ["1", "2"]
+		for version in list:
+			file_path = sublime.packages_path() + "/sublime-cakephp-find/json/core" + version + ".json"
+			f = open(file_path)
+			self.core_list[version] = json.load(f)
+			f.close()
+
+# Sublime Text 2
+if sublime.version().startswith('2'):
+	cakephp_find_core_list = CakephpFindCoreList()
+# Sublime Text 3
+def plugin_loaded():
+	cakephp_find_core_list = CakephpFindCoreList()
+
+
 class CommandThread(threading.Thread):
 	def __init__(self, command):
 		self.command = command
@@ -767,10 +789,7 @@ class Path:
 	def set_core_list(self):
 		if self.core_list is not None:
 			return
-		file_path = sublime.packages_path() + "/sublime-cakephp-find/json/core" + str(self.major_version) + ".json"
-		f = open(file_path)
-		self.core_list = json.load(f)
-		f.close()
+		self.core_list = cakephp_find_core_list.core_list[str(self.major_version)]
 
 	def set_core_list_root(self):
 		if self.folder_path['core'] is None:
