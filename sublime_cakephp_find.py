@@ -233,13 +233,7 @@ def is_render_function(self):
 			return True
 	if not controller_name:
 		controller_name = self.plural_name
-	view_file_name = self.path.complete_file_name('view', view_name)
-	category_path = self.path.get_category_path('view', plugin_name)
-	if not category_path:
-		return False
-	file_path = category_path + controller_name + "/" + view_file_name
-	self.path.switch_to_file(file_path, self.view)
-	return True
+	return self.path.switch_to_view(self.view, controller_name, view_name, plugin_name)
 
 def is_redirect_function(self):
 	(controller_name, self.action_name) = Text().match_redirect_function(self.select_line_str)
@@ -484,7 +478,7 @@ class CakeSwitchToViewCommand(sublime_plugin.TextCommand):
 		if not is_file(self) or self.action_name is None:
 			sublime.status_message("Can't switch to view.")
 			return
-		self.path.switch_to_category(self.view, 'view', self.plural_name, self.action_name)
+		return self.path.switch_to_view(self.view, self.plural_name, self.action_name)
 
 class CakeSwitchToTestCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

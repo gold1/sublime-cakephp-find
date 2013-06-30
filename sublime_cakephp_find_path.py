@@ -162,6 +162,9 @@ class Path:
 			self.dir_path['vendor'] = "vendors/"
 			self.dir_path['layout'] = "views/layouts/"
 			self.dir_path['element'] = "views/elements/"
+			self.dir_path['error'] = "views/errors/"
+			self.dir_path['email'] = "views/elements/email/"
+			self.dir_path['scaffold'] = "views/scaffolds/"
 			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
 			self.dir_path['controller_test'] = "tests/cases/controllers/"
@@ -189,6 +192,9 @@ class Path:
 			self.dir_path['vendor'] = "Vendor/"
 			self.dir_path['layout'] = "View/Layouts/"
 			self.dir_path['element'] = "View/Elements/"
+			self.dir_path['error'] = "View/Errors/"
+			self.dir_path['email'] = "View/Emails/"
+			self.dir_path['scaffold'] = "View/Scaffolds/"
 			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
 			self.dir_path['controller_test'] = "Test/Case/Controller/"
@@ -222,6 +228,9 @@ class Path:
 			'vendor',
 			'layout',
 			'element',
+			'error',
+			'email',
+			'scaffold',
 			'plugin',
 			'test',
 			# test
@@ -274,13 +283,27 @@ class Path:
 		return match.group(1)
 
 	def match_view_file(self, view):
-		regexp = self.folder_path['view'] + "([^/]+)/([^/]+/)?([^/.]+)\.([a-z]+)$"
+		regexp = self.folder_path['view'] + "(([^/]+/)+)([^/.]+)\.([a-z]+)$"
 		match = self.match(regexp, self.convert_file_path(view))
 		if (match == False or
 			self.match_helper_file(view) != False or
 			self.match_layout_file(view) != False):
 			return False, False, False
-		return match.group(1), match.group(3), match.group(4)
+		# check controller name
+		controller_path = match.group(1)
+		controller_path = controller_path[:len(controller_path)-1]
+		dir_split = controller_path.split("/")
+		if len(dir_split) == 1:
+			return controller_path, match.group(3), match.group(4)
+		# check list
+		controller_list = self.get_controller_list()
+		find_flag = False
+		for dir_name in dir_split:
+			complete_name = self.complete_file_name('controller', dir_name)
+			for contoller_file in controller_list:
+				if contoller_file == complete_name:
+					return dir_name, match.group(3), match.group(4)
+		return False, False, False
 
 	def match_component_file(self, view):
 		if self.major_version == 1:
@@ -863,3 +886,87 @@ class Path:
 		if plugin_name:
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
+
+	def switch_to_view(self, view, controller_name, action_name, plugin_name = False):
+		category_path = self.get_category_path('view', plugin_name)
+		exclude_dir_names = [
+			'element',
+			'layout',
+			'error',
+			'email',
+			'scaffold',
+			'helper',
+		]
+		exclude_paths = []
+		for dir_name in exclude_dir_names:
+			dir_path = self.dir_path[dir_name].replace(self.dir_path['view'], "")
+			exclude_paths.append(dir_path[:len(dir_path) - 1])
+
+		result_list = self.get_file_list_recursive(category_path, {"exclude_paths":exclude_paths})
+		find_list = []
+		for path in result_list:
+			after_path = path.replace(self.folder_path['view'], "")
+			if (re.search(action_name + "." + self.view_extension + "$", after_path) is None or
+				re.search(controller_name, after_path) is None):
+				continue
+			find_list.append(path)
+		if len(find_list) == 0:
+			return False
+		if len(find_list) == 1:
+			self.switch_to_file(find_list[0], view)
+			return True
+		self.show_view_list(view, find_list)
+		return True
+
+	def get_file_list_recursive(self, root, options = {}):
+		result_list = []
+		if not os.path.exists(root):
+			return result_list
+		# save base root
+		if not options.has_key("base_root"):
+			options["base_root"] = root
+
+		list = os.listdir(root)
+		for name in list:
+			if options.has_key("exclude_paths"):
+				continue_flag = False
+				relative_path = (root + name).replace(options["base_root"], "")
+				#print("rela: " + relative_path)
+				for exclude_path in options["exclude_paths"]:
+					#print("dir: " + exclude_path)
+					if relative_path == exclude_path:
+						continue_flag = True
+				if continue_flag:
+					continue
+			if not options.has_key("not_recursive"):
+				if os.path.isdir(root + name):
+					result = self.get_file_list_recursive(root + name + "/", options)
+					if len(result) > 0:
+						result_list += result
+			if os.path.isfile(root + name):
+				result_list.append(root + name)
+		return result_list
+
+	def show_view_list(self, view, view_list):
+		self.show_list_view = view
+		self.view_list = view_list
+		show_list = []
+		for info in view_list:
+			new_info = info.replace(self.folder_path['app'], "")
+			show_list.append(new_info)
+		view.window().show_quick_panel(show_list, self.result_view_list)
+
+	def result_view_list(self, result):
+		if result == -1: return
+		self.switch_to_file(self.view_list[result], self.show_list_view)
+
+	def get_controller_list(self):
+		list = []
+		find_list = self.get_file_list_recursive(self.folder_path['controller'], {"not_recursive":True})
+		for path in find_list:
+			after_path = path.replace(self.folder_path['controller'], "")
+			if re.match(".php$", after_path) is not None:
+				continue
+			list.append(after_path)
+		return list
+
