@@ -34,6 +34,7 @@ if sublime.version().startswith('2'):
 	cakephp_find_core_list = CakephpFindCoreList()
 # Sublime Text 3
 def plugin_loaded():
+	global cakephp_find_core_list
 	cakephp_find_core_list = CakephpFindCoreList()
 
 
@@ -875,14 +876,14 @@ class Path:
 		self.switch_to_file(self.folder_path['css'] + selected, self.show_list_view)
 
 	def get_category_path(self, category, plugin_name = False, options = {}):
-		if options.has_key('core'):
-			if self.dir_path.has_key('core_' + category): return False
+		if 'core' in options:
+			if 'core_' + category in self.dir_path: return False
 			return self.folder_path['core_' + category]
-		if options.has_key('test'):
-			if self.dir_path.has_key(category + '_test'): return False
+		if 'test' in options:
+			if category + '_test' in self.dir_path: return False
 			return self.folder_path[category + '_test']
 
-		if not self.dir_path.has_key(category): return False
+		if not category in self.dir_path: return False
 		if plugin_name:
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
@@ -923,12 +924,12 @@ class Path:
 		if not os.path.exists(root):
 			return result_list
 		# save base root
-		if not options.has_key("base_root"):
+		if not "base_root" in options:
 			options["base_root"] = root
 
 		list = os.listdir(root)
 		for name in list:
-			if options.has_key("exclude_paths"):
+			if "exclude_paths" in options:
 				continue_flag = False
 				relative_path = (root + name).replace(options["base_root"], "")
 				#print("rela: " + relative_path)
@@ -938,7 +939,7 @@ class Path:
 						continue_flag = True
 				if continue_flag:
 					continue
-			if not options.has_key("not_recursive"):
+			if not "not_recursive" in options:
 				if os.path.isdir(root + name):
 					result = self.get_file_list_recursive(root + name + "/", options)
 					if len(result) > 0:
