@@ -1012,3 +1012,35 @@ class Path:
 			list.append(after_path)
 		return list
 
+	def switch_to_locale(self, view, plugin_name):
+		category_path = self.get_category_path('locale', plugin_name)
+		if not category_path:
+			return False
+		list = os.listdir(category_path)
+		locale_names = []
+		for name in list:
+			if os.path.isdir(category_path + name):
+				locale_names.append(name)
+		if len(locale_names) == 0:
+			return False
+		if len(locale_names) == 1:
+			self.switch_to_file(locale_names[0], view)
+			return True
+
+		if plugin_name:
+			file_name = Inflector().underscore(plugin_name) + ".po"
+		else:
+			file_name = "default.po"
+		self.show_list = []
+		self.locale_list = []
+		for name in locale_names:
+			self.show_list.append("/" + name + "/LC_MESSAGES/" + file_name)
+			self.locale_list.append(category_path + name + "/LC_MESSAGES/" + file_name)
+		self.show_list_view = view
+		view.window().show_quick_panel(self.show_list, self.result_locale_list)
+		return True
+
+	def result_locale_list(self, result):
+		if result == -1: return
+		self.switch_to_file(self.locale_list[result], self.show_list_view)
+

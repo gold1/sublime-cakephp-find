@@ -152,17 +152,8 @@ class SamplesController extends Controller {
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 |  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
-| __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po *1)|
+| __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
 
-*1)  
-If you want to open the file in directory "fra" on `__("Hello!");`, you need to set local code.  
-Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
-```json
-    "sublime_cakephp_find":
-    {
-        "default_local_code": "fra"
-    }
-```
 
 ## Run Test
 If you want to run test, we recommend you this plug-in.
