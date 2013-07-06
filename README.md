@@ -151,6 +151,7 @@ class SamplesController extends Controller {
 | CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones |
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 |  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
+| "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 
 ## Run Test
 If you want to run test, we recommend you this plug-in.
