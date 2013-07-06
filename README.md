@@ -166,6 +166,7 @@ BSD License
 
 Reference code, Thank you.
 
+- [bermi](https://github.com/bermi) / [Python-Inflector](https://github.com/bermi/Python-Inflector)
 - [violetyk](https://github.com/violetyk) / [cake.vim](https://github.com/violetyk/cake.vim)
 - [k1LoW](https://github.com/k1LoW) / [emacs-cake2](https://github.com/k1LoW/emacs-cake2)
 
