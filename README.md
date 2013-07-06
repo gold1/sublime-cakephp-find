@@ -151,10 +151,14 @@ class SamplesController extends Controller {
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 |  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
 
+## Run Test
+If you want to run test, we recommend you this plug-in.
+
+- [jwindmuller / SublimeCake](https://github.com/jwindmuller/SublimeCake)
+
 ## License
 
 BSD License
-
 
 ## Reference
 
