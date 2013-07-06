@@ -61,6 +61,7 @@ class SamplesController extends Controller {
 // : command(C) -> app/Controller/SamplesController.php : function index()
 ?>
 ```
+
 ## Open directory
 - You can choose file from panel.
 
@@ -149,6 +150,10 @@ class SamplesController extends Controller {
 | CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones |
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 |  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
+
+## License
+
+BSD License
 
 
 ## Reference
