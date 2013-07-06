@@ -64,23 +64,23 @@ class SamplesController extends Controller {
 ## Open directory
 - You can choose file from panel.
 
-| Command | Function | Directory |
+| Command | Directory |Function | 
 | --- | --- | --- |
-| `ctrl + shift + c`, `ctrl + d` | cake_show_directory_list | current directory |
-| `ctrl + shift + c`, `ctrl + c` | cake_show_controller_list | controller |
-| `ctrl + shift + c`, `ctrl + m` | cake_show_model_list | model |
-| `ctrl + shift + c`, `ctrl + v` | cake_show_view_list | view |
-| `ctrl + shift + c`, `ctrl + o` | cake_show_component_list | component |
-| `ctrl + shift + c`, `ctrl + b` | cake_show_behavior_list | behavior |
-| `ctrl + shift + c`, `ctrl + h` | cake_show_helper_list | helper |
-| `ctrl + shift + c`, `ctrl + l` | cake_show_lib_list | lib |
-| `ctrl + shift + c`, `ctrl + y` | cake_show_layout_list | layout |
-| `ctrl + shift + c`, `ctrl + s` | cake_show_css_list | css |
-| `ctrl + shift + c`, `ctrl + j` | cake_show_javascript_list | javascript |
-| `ctrl + shift + c`, `ctrl + e` | cake_show_element_list | element |
-| `ctrl + shift + c`, `ctrl + g` | cake_show_config_list | config |
-| `ctrl + shift + c`, `ctrl + p` | cake_show_plugin_list | plugin |
-| `ctrl + shift + c`, `ctrl + t` | cake_show_test_list | test |
+| `ctrl + shift + c`, `ctrl + d` | current directory |cake_show_directory_list | 
+| `ctrl + shift + c`, `ctrl + c` | controller |cake_show_controller_list | 
+| `ctrl + shift + c`, `ctrl + m` | model |cake_show_model_list | 
+| `ctrl + shift + c`, `ctrl + v` | view |cake_show_view_list | 
+| `ctrl + shift + c`, `ctrl + o` | component |cake_show_component_list | 
+| `ctrl + shift + c`, `ctrl + b` | behavior |cake_show_behavior_list | 
+| `ctrl + shift + c`, `ctrl + h` | helper |cake_show_helper_list | 
+| `ctrl + shift + c`, `ctrl + l` | lib |cake_show_lib_list | 
+| `ctrl + shift + c`, `ctrl + y` | layout |cake_show_layout_list | 
+| `ctrl + shift + c`, `ctrl + s` | css |cake_show_css_list | 
+| `ctrl + shift + c`, `ctrl + j` | javascript |cake_show_javascript_list | 
+| `ctrl + shift + c`, `ctrl + e` | element |cake_show_element_list | 
+| `ctrl + shift + c`, `ctrl + g` | config |cake_show_config_list | 
+| `ctrl + shift + c`, `ctrl + p` | plugin |cake_show_plugin_list | 
+| `ctrl + shift + c`, `ctrl + t` | test |cake_show_test_list | 
 
 
 #### Example
