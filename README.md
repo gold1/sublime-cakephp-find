@@ -29,12 +29,12 @@ You can find out file and open easily.
 ## Switch Command
 - It changes to a corresponding file. 
 
-| Command | Function |
-| --- | --- |
-| `ctrl + shift + c`, `c` | cake_switch_to_controller |
-| `ctrl + shift + c`, `v` | cake_switch_to_view |
-| `ctrl + shift + c`, `m` | cake_switch_to_model |
-| `ctrl + shift + c`, `t` | cake_switch_to_test |
+| Command | File | Function |
+| --- | --- | --- |
+| `ctrl + shift + c`, `c` | controller | cake_switch_to_controller |
+| `ctrl + shift + c`, `v` | view | cake_switch_to_view |
+| `ctrl + shift + c`, `m` | model | cake_switch_to_model |
+| `ctrl + shift + c`, `t` | test | cake_switch_to_test |
 
 #### Example
 ```php
