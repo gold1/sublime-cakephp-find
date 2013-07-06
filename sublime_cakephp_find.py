@@ -558,6 +558,11 @@ class CakeShowLibListCommand(SublimeCakephpFind):
 		if not self.set_app_path(): return
 		self.path.show_dir_list(self.path.folder_path["lib"], self.view)
 
+class CakeShowVendorListCommand(SublimeCakephpFind):
+	def run(self, edit):
+		if not self.set_app_path(): return
+		self.path.show_dir_list(self.path.folder_path["vendor"], self.view)
+
 class CakeShowLayoutListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return

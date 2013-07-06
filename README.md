@@ -75,7 +75,8 @@ class SamplesController extends Controller {
 | `ctrl + shift + c`, `ctrl + b` | behavior |cake_show_behavior_list | 
 | `ctrl + shift + c`, `ctrl + h` | helper |cake_show_helper_list | 
 | `ctrl + shift + c`, `ctrl + l` | lib |cake_show_lib_list | 
-| `ctrl + shift + c`, `ctrl + y` | layout |cake_show_layout_list | 
+| `ctrl + shift + c`, `ctrl + shift + l` | layout |cake_show_layout_list | 
+| `ctrl + shift + c`, `ctrl + shift + v` | vendor |cake_show_vendor_list | 
 | `ctrl + shift + c`, `ctrl + s` | css |cake_show_css_list | 
 | `ctrl + shift + c`, `ctrl + j` | javascript |cake_show_javascript_list | 
 | `ctrl + shift + c`, `ctrl + e` | element |cake_show_element_list | 
