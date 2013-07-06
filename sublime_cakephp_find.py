@@ -23,6 +23,11 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.select_class_name = None
 		self.select_sub_name = None
 		self.select_sub_type = None
+		self.default_local_code = 'eng'
+		self.user_settings = self.view.settings().get('sublime_cakephp_find')
+		if self.user_settings is not None:
+			if "default_local_code" in self.user_settings:
+				self.default_local_code = self.user_settings["default_local_code"]
 		if not self.path.set_app(self.view):
 			return False
 		return True
@@ -220,6 +225,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_app_uses() or
 			self.is_new_class() or
 			self.is_enclosed_word() or
+			self.is_local_function() or
 			self.is_class_operator()):
 			return True
 		return False
@@ -411,6 +417,22 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			if not file_path:
 				return False
 			self.path.switch_to_file(file_path, self.view)
+		return True
+
+	def is_local_function(self):
+		(plugin_name, msg_id) = Text().match_local_function(self.select_line_str)
+		if not msg_id:
+			return False
+		category_path = self.path.get_category_path('locale', plugin_name)
+		if not category_path:
+			return False
+		if plugin_name:
+			file_name = Inflector().underscore(plugin_name) + ".po"
+		else:
+			file_name = "default.po"
+		self.path.set_open_file_callback(Text().move_point_msgid, msg_id)
+		file_path = category_path + self.default_local_code + "/LC_MESSAGES/" + file_name
+		self.path.switch_to_file(file_path, self.view)
 		return True
 
 	def copy_word_to_find_panel(self, type = 'word'):

@@ -242,6 +242,13 @@ class Text:
 			return
 		self.move_view_point(view, point)
 
+	def move_point_msgid(self, view, arg):
+		(msg_id, ) = arg
+		point = self.search_point_msgid(msg_id, view)
+		if point == -1:
+			return
+		self.move_view_point(view, point)
+
 	def move_line_number(self, view, arg):
 		(line_number, ) = arg
 		point = view.text_point(line_number, 0)
@@ -255,6 +262,12 @@ class Text:
 
 	def search_point_variable(self, variable_name, view):
 		match = re.search("(public|protected|private|var|const)[ \t]+(static[ \t]+)*\$?" + variable_name, self.view_content(view))
+		if match is None:
+			return -1
+		return match.start(0)
+
+	def search_point_msgid(self, msg_id, view):
+		match = re.search("msgid[ \t]+\"" + msg_id + "\"", self.view_content(view))
 		if match is None:
 			return -1
 		return match.start(0)
@@ -441,6 +454,19 @@ class Text:
 					controller_name = list[1]
 					action_name = list[2]
 		return controller_name, action_name
+
+	def match_local_function(self, line_content):
+		# __("Hello!");
+		# __c("Hello!");
+		match = re.search("__[c]?\(['\"](.*?)['\"][,\)]", line_content)
+		if match is not None:
+			return False, match.group(1)
+		# __d("domain", "Hello!");
+		# __dc("domain", "Hello!");
+		match = re.search("__d[c]?\(['\"](.*?)['\"],[ \t]+['\"](.*?)['\"][,\)]", line_content)
+		if match is not None:
+			return match.group(1), match.group(2)
+		return False, False
 
 
 

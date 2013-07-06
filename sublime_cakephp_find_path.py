@@ -168,6 +168,7 @@ class Path:
 			self.dir_path['scaffold'] = "views/scaffolds/"
 			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
+			self.dir_path['locale'] = "locale/"
 			self.dir_path['controller_test'] = "tests/cases/controllers/"
 			self.dir_path['model_test'] = "tests/cases/models/"
 			self.dir_path['component_test'] = "tests/cases/components/"
@@ -178,7 +179,7 @@ class Path:
 				self.dir_path['core_model'] = "model/"
 				self.dir_path['core_view'] = "view/"
 				self.dir_path['core_component'] = "controller/components/"
-				self.dir_path['core_model'] = "model/behaviors/"
+				self.dir_path['core_behavior'] = "model/behaviors/"
 				self.dir_path['core_helper'] = "view/helpers/"
 				self.dir_path['core_lib'] = ""
 		elif self.major_version == 2:
@@ -198,6 +199,7 @@ class Path:
 			self.dir_path['scaffold'] = "View/Scaffolds/"
 			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
+			self.dir_path['locale'] = "Locale/"
 			self.dir_path['controller_test'] = "Test/Case/Controller/"
 			self.dir_path['model_test'] = "Test/Case/Model/"
 			self.dir_path['component_test'] = "Test/Case/Controller/Component/"
@@ -234,6 +236,7 @@ class Path:
 			'scaffold',
 			'plugin',
 			'test',
+			'locale',
 			# test
 			'controller_test',
 			'model_test',
@@ -885,6 +888,10 @@ class Path:
 
 		if not category in self.dir_path: return False
 		if plugin_name:
+			if self.major_version == 1:
+				plugin_name = Inflector().underscore(plugin_name)
+			elif self.major_version == 2:
+				plugin_name = Inflector().camelize(plugin_name)
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
 
