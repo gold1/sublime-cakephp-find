@@ -890,20 +890,47 @@ class Path:
 
 	def switch_to_view(self, view, controller_name, action_name, plugin_name = False):
 		category_path = self.get_category_path('view', plugin_name)
-		exclude_dir_names = [
-			'element',
-			'layout',
-			'error',
-			'email',
-			'scaffold',
-			'helper',
-		]
-		exclude_paths = []
-		for dir_name in exclude_dir_names:
-			dir_path = self.dir_path[dir_name].replace(self.dir_path['view'], "")
-			exclude_paths.append(dir_path[:len(dir_path) - 1])
+		if not category_path:
+			return False
+		search_path = category_path
+		view_file_name = self.complete_file_name('view', action_name)
+		# check defult path
+		file_path = category_path + controller_name + "/" + view_file_name
+		if os.path.exists(file_path):
+			self.switch_to_file(file_path, view)
+			return True
+		
+		# check controller_name in view dir
+		# View - controller_name - jpn
+		#                        - eng
+		if os.path.exists(category_path + controller_name + "/"):
+			search_path = category_path + controller_name + "/"
+			result_list = self.get_file_list_recursive(search_path)
+		else:
+			exclude_dir_names = [
+				'element',
+				'layout',
+				'error',
+				'email',
+				'scaffold',
+				'helper',
+			]
+			exclude_paths = []
+			for dir_name in exclude_dir_names:
+				dir_path = self.dir_path[dir_name].replace(self.dir_path['view'], "")
+				exclude_paths.append(dir_path[:len(dir_path) - 1])
+			# check controller_name in view sub dir
+			# View - jpn - controller_name
+			#      - eng - controller_name
+			subdir_list = self.get_file_list_recursive(search_path, {"exclude_paths":exclude_paths, "recursive_num":2})
+			result_list = []
+			for subdir_path in subdir_list:
+				if re.search(controller_name, subdir_path) is not None:
+					result_list = result_list + self.get_file_list_recursive(subdir_path)
+			# search all view dir
+			if len(result_list) == 0:
+				result_list = self.get_file_list_recursive(search_path, {"exclude_paths":exclude_paths})
 
-		result_list = self.get_file_list_recursive(category_path, {"exclude_paths":exclude_paths})
 		find_list = []
 		for path in result_list:
 			after_path = path.replace(self.folder_path['view'], "")
@@ -926,6 +953,10 @@ class Path:
 		# save base root
 		if not "base_root" in options:
 			options["base_root"] = root
+		# recursive num --
+		if "recursive_num" in options:
+			options["recursive_num"] = options["recursive_num"] - 1
+
 
 		list = os.listdir(root)
 		for name in list:
@@ -939,8 +970,11 @@ class Path:
 						continue_flag = True
 				if continue_flag:
 					continue
-			if not "not_recursive" in options:
-				if os.path.isdir(root + name):
+			if os.path.isdir(root + name):
+				if ("not_recursive" in options or
+					("recursive_num" in options and options["recursive_num"] <= 0)):
+					result_list.append(root + name + "/")
+				else:
 					result = self.get_file_list_recursive(root + name + "/", options)
 					if len(result) > 0:
 						result_list += result
