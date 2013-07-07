@@ -608,4 +608,8 @@ class CakeShowTestListCommand(SublimeCakephpFind):
 		if not self.set_app_path(): return
 		self.path.show_dir_list(self.path.folder_path["test"], self.view)
 
+class CakeOpenFolderCommand(SublimeCakephpFind):
+	def run(self, edit):
+		if not self.set_app_path(): return
+		self.path.execute(self.path.get_this_dir(self.view))
 

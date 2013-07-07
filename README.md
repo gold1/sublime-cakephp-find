@@ -84,13 +84,18 @@ class SamplesController extends Controller {
 | `ctrl + shift + c`, `ctrl + p` | plugin |cake_show_plugin_list | 
 | `ctrl + shift + c`, `ctrl + t` | test |cake_show_test_list | 
 
-
 #### Example
 
 - controller directory
 
 ![controller](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0001.png)
 
+#### Open folder
+- You can open folder that contains the file.
+
+| Command | Folder |Function | 
+| --- | --- | --- |
+| `ctrl + shift + c`, `s`, `f` | current directory |cake_open_folder | 
 
 
 ## Find file
