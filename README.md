@@ -156,6 +156,7 @@ class SamplesController extends Controller {
 | CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones |
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 |  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
+|  $Email->template('default'); | app/View/Emails/text/default.ctp |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
 

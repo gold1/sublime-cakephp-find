@@ -165,6 +165,7 @@ class Path:
 			self.dir_path['element'] = "views/elements/"
 			self.dir_path['error'] = "views/errors/"
 			self.dir_path['email'] = "views/elements/email/"
+			self.dir_path['email_layout'] = "views/layouts/email/"
 			self.dir_path['scaffold'] = "views/scaffolds/"
 			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
@@ -196,6 +197,7 @@ class Path:
 			self.dir_path['element'] = "View/Elements/"
 			self.dir_path['error'] = "View/Errors/"
 			self.dir_path['email'] = "View/Emails/"
+			self.dir_path['email_layout'] = "View/Layouts/Emails/"
 			self.dir_path['scaffold'] = "View/Scaffolds/"
 			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
@@ -233,6 +235,7 @@ class Path:
 			'element',
 			'error',
 			'email',
+			'email_layout',
 			'scaffold',
 			'plugin',
 			'test',
@@ -991,16 +994,12 @@ class Path:
 
 	def show_view_list(self, view, view_list):
 		self.show_list_view = view
-		self.view_list = view_list
+		self.result_path_list = view_list
 		show_list = []
 		for info in view_list:
 			new_info = info.replace(self.folder_path['app'], "")
 			show_list.append(new_info)
-		view.window().show_quick_panel(show_list, self.result_view_list)
-
-	def result_view_list(self, result):
-		if result == -1: return
-		self.switch_to_file(self.view_list[result], self.show_list_view)
+		view.window().show_quick_panel(show_list, self.switch_result_path)
 
 	def get_controller_list(self):
 		list = []
@@ -1032,15 +1031,45 @@ class Path:
 		else:
 			file_name = "default.po"
 		self.show_list = []
-		self.locale_list = []
+		self.result_path_list = []
 		for name in locale_names:
 			self.show_list.append("/" + name + "/LC_MESSAGES/" + file_name)
-			self.locale_list.append(category_path + name + "/LC_MESSAGES/" + file_name)
+			self.result_path_list.append(category_path + name + "/LC_MESSAGES/" + file_name)
 		self.show_list_view = view
-		view.window().show_quick_panel(self.show_list, self.result_locale_list)
+		view.window().show_quick_panel(self.show_list, self.switch_result_path)
 		return True
 
-	def result_locale_list(self, result):
+	def split_plugin_name(self, name):
+		split = name.split(".")
+		if len(split) > 1:
+			plugin_name = split[0]
+			file_name = split[1]
+		else:
+			plugin_name = False
+			file_name = split[-1]
+		return plugin_name, file_name
+
+	def switch_to_email_template(self, view, category_path, template_name):
+		show_list = []
+		self.result_path_list = []
+		show_base_path = category_path.replace(self.folder_path["app"], "")
+		if os.path.exists(category_path + 'text/' + template_name + "." + self.view_extension):
+			show_list.append(show_base_path + 'text/' + template_name + "." + self.view_extension)
+			self.result_path_list.append(category_path + 'text/' + template_name + "." + self.view_extension)
+		if os.path.exists(category_path + 'html/' + template_name + "." + self.view_extension):
+			show_list.append(show_base_path + 'html/' + template_name + "." + self.view_extension)
+			self.result_path_list.append(category_path + 'html/' + template_name + "." + self.view_extension)
+		if len(show_list) == 0:
+			return False
+		if len(show_list) == 1:
+			self.switch_to_file(category_path + show_list[0], view)
+			return True
+		self.show_list_view = view
+		view.window().show_quick_panel(show_list, self.switch_result_path)
+		return True
+
+	def switch_result_path(self, result):
 		if result == -1: return
-		self.switch_to_file(self.locale_list[result], self.show_list_view)
+		self.switch_to_file(self.result_path_list[result], self.show_list_view)
+
 

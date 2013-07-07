@@ -223,6 +223,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_new_class() or
 			self.is_enclosed_word() or
 			self.is_local_function() or
+			self.is_email_template() or
 			self.is_class_operator()):
 			return True
 		return False
@@ -422,6 +423,23 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			return False
 		self.path.set_open_file_callback(Text().move_point_msgid, msg_id)
 		return self.path.switch_to_locale(self.view, plugin_name)
+
+	def is_email_template(self):
+		(template_name, layout_name) = Text().match_email_template(self.select_line_str)
+		if not template_name and not layout_name:
+			return False
+		if (layout_name and layout_name != template_name and
+			(not template_name or self.enclosed_word == layout_name)):
+			(plugin_name, file_name) = self.path.split_plugin_name(layout_name)
+			category_path = self.path.get_category_path('email_layout', plugin_name)
+		elif template_name:
+			(plugin_name, file_name) = self.path.split_plugin_name(template_name)
+			category_path = self.path.get_category_path('email', plugin_name)
+		else:
+			return False
+		if not category_path:
+			return False
+		return self.path.switch_to_email_template(self.view, category_path, file_name)
 
 	def copy_word_to_find_panel(self, type = 'word'):
 		if type == 'word':

@@ -468,5 +468,21 @@ class Text:
 			return match.group(1), match.group(2)
 		return False, False
 
+	def match_email_template(self, line_content):
+		# ->template('default');
+		# ->template('default', 'default');
+		# ->template(false, 'default');
+		# ->template('DebugKit.default', 'DebugKit.default');
+		match = re.search("->template\((false|['\"]([a-zA-Z0-9_\.]+)['\"])(,[ \t]+['\"]([a-zA-Z0-9_\.]+)['\"])?", line_content)
+		if match is None:
+			return False, False
+		template_name = match.group(2)
+		if template_name is None:
+			template_name = False
+		if match.group(4) is None:
+			return template_name, False
+		return template_name, match.group(4)
+
+
 
 
