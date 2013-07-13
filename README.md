@@ -83,6 +83,8 @@ class SamplesController extends Controller {
 | `ctrl + shift + c`, `ctrl + g` | config |cake_show_config_list | 
 | `ctrl + shift + c`, `ctrl + p` | plugin |cake_show_plugin_list | 
 | `ctrl + shift + c`, `ctrl + t` | test |cake_show_test_list | 
+| `ctrl + shift + c`, `ctrl + f` | fixture |cake_show_fixture_list | 
+
 
 #### Example
 
@@ -155,8 +157,9 @@ class SamplesController extends Controller {
 | $time->listTimezones(); | lib/Cake/Utility/CakeTime.php : listTimezones |
 | CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones |
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
-|  $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
-|  $Email->template('default'); | app/View/Emails/text/default.ctp |
+| $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
+| $Email->template('default'); | app/View/Emails/text/default.ctp |
+| $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
 

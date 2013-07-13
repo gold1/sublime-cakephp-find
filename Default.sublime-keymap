@@ -20,5 +20,6 @@
     { "keys": ["ctrl+shift+c", "ctrl+g"], "command": "cake_show_config_list" },
     { "keys": ["ctrl+shift+c", "ctrl+p"], "command": "cake_show_plugin_list" },
     { "keys": ["ctrl+shift+c", "ctrl+t"], "command": "cake_show_test_list" },
+    { "keys": ["ctrl+shift+c", "ctrl+f"], "command": "cake_show_fixture_list" },
     { "keys": ["ctrl+shift+c", "s", "f"], "command": "cake_open_folder" }
 ]
