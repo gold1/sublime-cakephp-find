@@ -117,10 +117,7 @@ class Path:
 	def set_major_version(self):
 		self.major_version = self.get_major_version_from_file()
 		if self.major_version is not None:
-			if self.major_version == 1:
-				self.folder_path['core'] = self.folder_path['root'] + "cake/libs/"
-			elif self.major_version == 2:
-				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
+			self.folder_path['core'] = True
 		else:
 			self.major_version = self.get_major_version_from_path()
 		if self.major_version is None:
@@ -169,11 +166,15 @@ class Path:
 			self.dir_path['scaffold'] = "views/scaffolds/"
 			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
+			self.dir_path['fixture'] = "tests/fixtures/"
 			self.dir_path['locale'] = "locale/"
 			self.dir_path['component_test'] = "components/"
 			self.dir_path['behavior_test'] = "behaviors/"
 			self.dir_path['helper_test'] = "helpers/"
 			if self.folder_path['core'] is not None:
+				self.folder_path['core'] = self.folder_path['root'] + "cake/libs/"
+				self.folder_path['core_test'] = self.folder_path['root'] + "cake/tests/cases/libs/"
+				self.folder_path['core_fixture'] = self.folder_path['root'] + "cake/tests/fixtures/"
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
 				self.dir_path['core_view'] = "view/"
@@ -199,11 +200,15 @@ class Path:
 			self.dir_path['scaffold'] = "View/Scaffolds/"
 			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
+			self.dir_path['fixture'] = "Test/Fixture/"
 			self.dir_path['locale'] = "Locale/"
 			self.dir_path['component_test'] = "Controller/Component/"
 			self.dir_path['behavior_test'] = "Model/Behavior/"
 			self.dir_path['helper_test'] = "View/Helper/"
 			if self.folder_path['core'] is not None:
+				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
+				self.folder_path['core_test'] = self.folder_path['root'] + "lib/Cake/Test/Case/"
+				self.folder_path['core_fixture'] = self.folder_path['root'] + "lib/Cake/Test/Fixture/"
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
 				self.dir_path['core_view'] = "View/"
@@ -235,6 +240,7 @@ class Path:
 			'scaffold',
 			'plugin',
 			'test',
+			'fixture',
 			'locale',
 		]
 		for category in list:
@@ -1032,4 +1038,38 @@ class Path:
 						break
 			new_path = self.remove_file_path_test(new_path)
 		return self.switch_to_file(new_path, view)
+
+	# type: "app", "core", "plugin"
+	def switch_to_fixture(self, view, type, class_name, plugin_name):
+		# 1
+		# app\tests\fixtures
+		# app\plugins\debug_kit\tests\fixtures
+		# cake\tests\fixtures
+		# 2
+		# app\Test\Fixture
+		# app\Plugin\DebugKit\Test\Fixture
+		# lib\Cake\Test\Fixture
+		if self.major_version == 1:
+			file_name = Inflector().underscore(class_name) + "_fixture.php"
+			if plugin_name:
+				change_plugin_name = Inflector().underscore(plugin_name)
+		elif self.major_version == 2:
+			file_name = Inflector().camelize(class_name) + "Fixture.php"
+			if plugin_name:
+				change_plugin_name = Inflector().camelize(plugin_name)
+
+		if type == "app":
+			file_path = self.folder_path["fixture"] + file_name
+		elif type == "plugin":
+			file_path = (self.folder_path["plugin"] + plugin_name + "/" +
+				self.dir_path["fixture"] + file_name)
+			if not os.path.exists(file_path):
+				file_path = (self.folder_path["plugin"] + change_plugin_name + "/" +
+					self.dir_path["fixture"] + file_name)
+		elif type == "core":
+			file_path = self.folder_path["core_fixture"] + file_name
+		
+		if os.path.exists(file_path):
+			return self.switch_to_file(file_path, view)
+		return False
 

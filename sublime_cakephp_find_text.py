@@ -483,6 +483,15 @@ class Text:
 			return template_name, False
 		return template_name, match.group(4)
 
+	def match_fixture(self, text):
+		# 'app.fixt'
+		# 'plugin.debug_kit.attachment'
+		# 'core.comment'
+		match = re.search("^[a-z0-9\._]+$", text)
+		if match is None:
+			return False
+		return True
+
 
 
 

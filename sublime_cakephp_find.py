@@ -306,6 +306,9 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 	def is_enclosed_word(self):
 		if not self.enclosed_word:
 			return False
+		if self.is_fixture():
+			return True
+
 		split = self.enclosed_word.split('.')
 		class_name = split[-1]
 		if len(split) > 1:
@@ -317,6 +320,20 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			return False
 		self.path.switch_to_file(file_path, self.view)
 		return True
+
+	def is_fixture(self):
+		split = self.enclosed_word.split('.')
+		if len(split) == 1 or not Text().match_fixture(self.enclosed_word):
+			return False
+
+		type = split[0]
+		if type == "plugin":
+			plugin_name = split[1]
+			class_name = split[2]
+		else:
+			plugin_name = False
+			class_name = split[1]
+		return self.path.switch_to_fixture(self.view, type, class_name, plugin_name)
 
 	def is_class_operator(self):
 		if self.select_class_name is None:
