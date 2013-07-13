@@ -170,11 +170,9 @@ class Path:
 			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
 			self.dir_path['locale'] = "locale/"
-			self.dir_path['controller_test'] = "tests/cases/controllers/"
-			self.dir_path['model_test'] = "tests/cases/models/"
-			self.dir_path['component_test'] = "tests/cases/components/"
-			self.dir_path['behavior_test'] = "tests/cases/behaviors/"
-			self.dir_path['helper_test'] = "tests/cases/helpers/"
+			self.dir_path['component_test'] = "components/"
+			self.dir_path['behavior_test'] = "behaviors/"
+			self.dir_path['helper_test'] = "helpers/"
 			if self.folder_path['core'] is not None:
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
@@ -202,11 +200,9 @@ class Path:
 			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
 			self.dir_path['locale'] = "Locale/"
-			self.dir_path['controller_test'] = "Test/Case/Controller/"
-			self.dir_path['model_test'] = "Test/Case/Model/"
-			self.dir_path['component_test'] = "Test/Case/Controller/Component/"
-			self.dir_path['behavior_test'] = "Test/Case/Model/Behavior/"
-			self.dir_path['helper_test'] = "Test/Case/View/Helper/"
+			self.dir_path['component_test'] = "Controller/Component/"
+			self.dir_path['behavior_test'] = "Model/Behavior/"
+			self.dir_path['helper_test'] = "View/Helper/"
 			if self.folder_path['core'] is not None:
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
@@ -240,12 +236,6 @@ class Path:
 			'plugin',
 			'test',
 			'locale',
-			# test
-			'controller_test',
-			'model_test',
-			'component_test',
-			'behavior_test',
-			'helper_test',
 		]
 		for category in list:
 			self.folder_path[category] = self.folder_path['app'] + self.dir_path[category]
@@ -361,59 +351,10 @@ class Path:
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
+		#split = match.group(1).split("/")
+		#plugin_name = split[0]
 		# match.group(2) : file_name
 		return True
-
-	def match_controller_test_file(self, view):
-		if self.major_version == 1:
-			regexp = (self.folder_path['controller_test'] + "([a-zA-Z0-9_]+)_controller\.test\.php$")
-		elif self.major_version == 2:
-			regexp = (self.folder_path['controller_test'] + "([a-zA-Z0-9_]+)ControllerTest\.php$")
-		match = self.match(regexp, self.convert_file_path(view))
-		if match == False:
-			return False
-		return match.group(1)
-
-	def match_model_test_file(self, view):
-		if self.major_version == 1:
-			regexp = (self.folder_path['model_test'] + "([^/]+)\.test\.php")
-		elif self.major_version == 2:
-			regexp = (self.folder_path['model_test'] + "([^/]+)Test\.php")
-		match = self.match(regexp, self.convert_file_path(view))
-		if (match == False or
-			self.match_behavior_file(view) != False):
-			return False
-		return match.group(1)
-
-	def match_component_test_file(self, view):
-		if self.major_version == 1:
-			regexp = (self.folder_path['component_test'] + "([a-zA-Z0-9_]+)\.test\.php$")
-		elif self.major_version == 2:
-			regexp = (self.folder_path['component_test'] + "([a-zA-Z0-9_]+)ComponentTest\.php$")
-		match = self.match(regexp, self.convert_file_path(view))
-		if match == False:
-			return False
-		return match.group(1)
-
-	def match_behavior_test_file(self, view):
-		if self.major_version == 1:
-			regexp = (self.folder_path['behavior_test'] + "([^/]+)\.test\.php")
-		elif self.major_version == 2:
-			regexp = (self.folder_path['behavior_test'] + "([^/]+)BehaviorTest\.php")
-		match = self.match(regexp, self.convert_file_path(view))
-		if match == False:
-			return False
-		return match.group(1)
-
-	def match_helper_test_file(self, view):
-		if self.major_version == 1:
-			regexp = (self.folder_path['helper_test'] + "([a-zA-Z0-9_]+)\.test\.php$")
-		elif self.major_version == 2:
-			regexp = (self.folder_path['helper_test'] + "([a-zA-Z0-9_]+)HelperTest\.php$")
-		match = self.match(regexp, self.convert_file_path(view))
-		if match == False:
-			return False
-		return match.group(1)
 
 	def match_core_list_file(self, view):
 		if self.folder_path['core_list_root'] is None:
@@ -437,12 +378,7 @@ class Path:
 			category == 'component' or
 			category == 'behavior' or
 			category == 'helper' or
-			category == 'layout' or
-			category == 'controller_test' or
-			category == 'model_test' or
-			category == 'component_test' or
-			category == 'behavior_test' or
-			category == 'helper_test'):
+			category == 'layout'):
 			file_path = (self.folder_path[category] + self.complete_file_name(category, name))
 		elif (category == 'view'):
 			# option_name : action_name
@@ -452,11 +388,11 @@ class Path:
 			return False
 		return self.switch_to_file(file_path, view)
 
-	def switch_to_file(self, file_path, view):
+	def switch_to_file(self, file_path, view, new_flag = False):
 		if os.path.exists(file_path):
 			self.open_file(file_path, view)
 			return True
-		else:
+		if new_flag:
 			if sublime.ok_cancel_dialog("Make new file?"):
 				open(file_path, "w")
 				if os.path.exists(file_path):
@@ -464,6 +400,7 @@ class Path:
 					return True
 				else:
 					sublime.error_message("Can't find " + file_path)
+		sublime.status_message("Can't switch to file.")
 		return False
 
 	def open_file(self, file_path, view):
@@ -616,6 +553,7 @@ class Path:
 	def search_class_file_plugin_all(self, search_class_name, current_file_type=None, plugin_name = None):
 		if self.major_version == 1:
 			file_name = Inflector().underscore(search_class_name)
+			plugin_name = Inflector().underscore(plugin_name)
 		elif self.major_version == 2:
 			file_name = search_class_name
 
@@ -678,11 +616,11 @@ class Path:
 			if os.path.isdir(root + name):
 				dir_path = root + name + "/"
 				sub_dir_list = [
-					'Controller/',
-					'Lib/',
-					'Model/',
-					'View/Helper/',
-					'Vendor/',
+					self.dir_path['controller'],
+					self.dir_path['model'],
+					self.dir_path['helper'],
+					self.dir_path['lib'],
+					self.dir_path['vendor'],
 				]
 				for sub_dir_name in sub_dir_list:
 					file_path = self.search_file_recursive(search_file_name, dir_path + sub_dir_name)
@@ -723,41 +661,6 @@ class Path:
 		elif type == 'authenticate':
 			# self.major_version : 1 is not exist
 			return self.check_and_add_tail(Inflector().camelize(new_name), 'Authenticate') + add_ext
-		elif type == 'controller_test':
-			if self.major_version == 1:
-				new_name = self.check_and_add_tail(Inflector().underscore(new_name), '_controller')
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-			elif self.major_version == 2:
-				new_name = self.check_and_add_tail(Inflector().camelize(new_name), 'Controller')
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-		elif type == 'model_test':
-			if self.major_version == 1:
-				new_name = Inflector().underscore(new_name)
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-			elif self.major_version == 2:
-				new_name = Inflector().camelize(new_name)
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-		elif type == 'component_test':
-			if self.major_version == 1:
-				new_name = Inflector().underscore(new_name)
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-			elif self.major_version == 2:
-				new_name = self.check_and_add_tail(Inflector().camelize(new_name), 'Component')
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-		elif type == 'behavior_test':
-			if self.major_version == 1:
-				new_name = Inflector().underscore(new_name)
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-			elif self.major_version == 2:
-				new_name = self.check_and_add_tail(Inflector().camelize(new_name), 'Behavior')
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-		elif type == 'helper_test':
-			if self.major_version == 1:
-				new_name = Inflector().underscore(new_name)
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
-			elif self.major_version == 2:
-				new_name = self.check_and_add_tail(Inflector().camelize(new_name), 'Helper')
-				return self.check_and_remove_tail(self.add_file_path_test(new_name), '.php') + add_ext
 
 		if (type == 'element' or
 			type == 'view' or
@@ -813,7 +716,16 @@ class Path:
 			return new_file_path + '.test.php'
 		elif self.major_version == 2:
 			new_file_path = self.check_and_remove_tail(new_file_path, 'Test')
-			return file_path + 'Test.php'
+			return new_file_path + 'Test.php'
+		return None
+
+	def remove_file_path_test(self, file_path):
+		if self.major_version == 1:
+			new_file_path = self.check_and_remove_tail(file_path, '.test.php')
+			return new_file_path + '.php'
+		elif self.major_version == 2:
+			new_file_path = self.check_and_remove_tail(file_path, 'Test.php')
+			return new_file_path + '.php'
 		return None
 
 	def set_core_list(self):
@@ -1072,4 +984,52 @@ class Path:
 		if result == -1: return
 		self.switch_to_file(self.result_path_list[result], self.show_list_view)
 
+	# type: "app", "core", "plugin"
+	def switch_to_test(self, view, type):
+		# 1
+		# app/
+		# app/tests/cases/ (5)
+		# app/plugins/debug_kit/
+		# app/plugins/debug_kit/tests/cases/  (5)
+		# core -- /cake
+		# core -- /cake/tests/cases/ :relative
+		#
+		# 2
+		# app/
+		# app/Test/Case/ :relative
+		# app/Plugin/DebugKit/
+		# app/Plugin/DebugKit/Test/Case/ :relative
+		# core -- /lib/Cake/
+		# core -- /lib/Cake/Test/Case/ :relative
+		subdir_list = ["component", "behavior", "helper"]
+		path = self.convert_file_path(view)
+		if type == "app":
+			test_relative_path = self.folder_path['app']
+		elif type == "plugin":
+			exclude_plugin_path = path.replace(self.folder_path['plugin'], "")
+			split = exclude_plugin_path.split("/")
+			test_relative_path = self.folder_path['plugin'] + split[0] + "/"
+		elif type == "core":
+			test_relative_path = self.folder_path['root'] + "cake/"
+
+		match = re.search(self.dir_path['test'], path)
+		if match is None:
+			# not test file change test file
+			new_path = path.replace(test_relative_path, test_relative_path + self.dir_path['test'])
+			if self.major_version == 1 and type != "core":
+				for subdir_name in subdir_list:
+					if re.search(self.dir_path[subdir_name], new_path) is not None:
+						new_path = new_path.replace(self.dir_path[subdir_name], self.dir_path[subdir_name + "_test"])
+						break
+			new_path = self.add_file_path_test(new_path)
+		else:
+			# test file change not test file
+			new_path = path.replace(self.dir_path['test'], "")
+			if self.major_version == 1 and type != "core":
+				for subdir_name in subdir_list:
+					if re.search(self.dir_path[subdir_name + "_test"], new_path) is not None:
+						new_path = new_path.replace(self.dir_path[subdir_name + "_test"], self.dir_path[subdir_name])
+						break
+			new_path = self.remove_file_path_test(new_path)
+		return self.switch_to_file(new_path, view)
 

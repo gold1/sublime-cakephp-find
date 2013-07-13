@@ -17,6 +17,7 @@ elif sublime.version().startswith('2'):
 class SublimeCakephpFind(sublime_plugin.TextCommand):
 	def set_app_path(self):
 		self.path = Path()
+		self.current_file_type = None
 		self.action_name = None
 		self.lower_camelized_action_name = None
 		self.select_word = None
@@ -38,11 +39,6 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_helper_file() or
 			self.is_layout_file() or
 			self.is_css_file() or
-			self.is_controller_test_file() or
-			self.is_model_test_file() or
-			self.is_component_test_file() or
-			self.is_behavior_test_file() or
-			self.is_helper_test_file() or
 			self.is_plugin_file() or
 			self.is_core_list_file() or
 			self.is_app_file()):
@@ -132,50 +128,6 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if not match:
 			return False
 		self.current_file_type = "plugin"
-		return True
-
-	def is_controller_test_file(self):
-		match = self.path.match_controller_test_file(self.view)
-		if not match:
-			return False
-		self.plural_name = match
-		self.singular_name = Inflector().singularize(self.plural_name)
-		self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
-		self.current_file_type = "controller_test"
-		return True
-
-	def is_model_test_file(self):
-		match = self.path.match_model_test_file(self.view)
-		if not match:
-			return False
-		self.singular_name = match
-		self.plural_name = Inflector().pluralize(self.singular_name)
-		self.camelize_name = Inflector().camelize(Inflector().underscore(self.singular_name))
-		self.current_file_type = "model_test"
-		return True
-
-	def is_component_test_file(self):
-		match = self.path.match_component_test_file(self.view)
-		if not match:
-			return False
-		self.singular_name = match
-		self.current_file_type = "component_test"
-		return True
-
-	def is_behavior_test_file(self):
-		match = self.path.match_behavior_test_file(self.view)
-		if not match:
-			return False
-		self.singular_name = match
-		self.current_file_type = "behavior_test"
-		return True
-
-	def is_helper_test_file(self):
-		match = self.path.match_helper_test_file(self.view)
-		if not match:
-			return False
-		self.singular_name = match
-		self.current_file_type = "helper_test"
 		return True
 
 	def is_core_list_file(self):
@@ -514,37 +466,13 @@ class CakeSwitchToTestCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():
 			return
-		if self.is_controller_file():
-			self.path.switch_to_category(self.view, 'controller_test', self.plural_name)
+		if not self.is_file():
+			sublime.status_message("Can't switch to test file.")
 			return
-		elif self.is_controller_test_file():
-			self.path.switch_to_category(self.view, 'controller', self.plural_name)
-			return
-		elif self.is_model_file():
-			self.path.switch_to_category(self.view, 'model_test', self.singular_name)
-			return
-		elif self.is_model_test_file():
-			self.path.switch_to_category(self.view, 'model', self.singular_name)
-			return
-		elif self.is_component_file():
-			self.path.switch_to_category(self.view, 'component_test', self.singular_name)
-			return
-		elif self.is_component_test_file():
-			self.path.switch_to_category(self.view, 'component', self.singular_name)
-			return
-		elif self.is_behavior_file():
-			self.path.switch_to_category(self.view, 'behavior_test', self.singular_name)
-			return
-		elif self.is_behavior_test_file():
-			self.path.switch_to_category(self.view, 'behavior', self.singular_name)
-			return
-		elif self.is_helper_file():
-			self.path.switch_to_category(self.view, 'helper_test', self.singular_name)
-			return
-		elif self.is_helper_test_file():
-			self.path.switch_to_category(self.view, 'helper', self.singular_name)
-			return
-		sublime.status_message("Can't switch to testcase.")
+		type = self.current_file_type
+		if type != "plugin" and type != "core":
+			type = "app"
+		return self.path.switch_to_test(self.view, type)
 
 class CakeShowDirectoryListCommand(SublimeCakephpFind):
 	def run(self, edit):
