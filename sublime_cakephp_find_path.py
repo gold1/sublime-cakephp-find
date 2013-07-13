@@ -175,6 +175,7 @@ class Path:
 				self.folder_path['core'] = self.folder_path['root'] + "cake/libs/"
 				self.folder_path['core_test'] = self.folder_path['root'] + "cake/tests/cases/libs/"
 				self.folder_path['core_fixture'] = self.folder_path['root'] + "cake/tests/fixtures/"
+				self.dir_path['core_test_relative'] = "tests/cases/libs/"
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
 				self.dir_path['core_view'] = "view/"
@@ -209,6 +210,7 @@ class Path:
 				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
 				self.folder_path['core_test'] = self.folder_path['root'] + "lib/Cake/Test/Case/"
 				self.folder_path['core_fixture'] = self.folder_path['root'] + "lib/Cake/Test/Fixture/"
+				self.dir_path['core_test_relative'] = self.dir_path['test']
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
 				self.dir_path['core_view'] = "View/"
@@ -998,7 +1000,7 @@ class Path:
 		# app/plugins/debug_kit/
 		# app/plugins/debug_kit/tests/cases/  (5)
 		# core -- /cake
-		# core -- /cake/tests/cases/ :relative
+		# core -- /cake/tests/cases/libs/ :relative
 		#
 		# 2
 		# app/
@@ -1010,18 +1012,21 @@ class Path:
 		subdir_list = ["component", "behavior", "helper"]
 		path = self.convert_file_path(view)
 		if type == "app":
-			test_relative_path = self.folder_path['app']
+			test_root_path = self.folder_path['app']
+			test_relative_path = self.dir_path['test']
 		elif type == "plugin":
 			exclude_plugin_path = path.replace(self.folder_path['plugin'], "")
 			split = exclude_plugin_path.split("/")
-			test_relative_path = self.folder_path['plugin'] + split[0] + "/"
+			test_root_path = self.folder_path['plugin'] + split[0] + "/"
+			test_relative_path = self.dir_path['test']
 		elif type == "core":
-			test_relative_path = self.folder_path['root'] + "cake/"
+			test_root_path = self.folder_path['core_test'].replace(self.dir_path['core_test_relative'], "")
+			test_relative_path = self.dir_path['core_test_relative']
 
-		match = re.search(self.dir_path['test'], path)
+		match = re.search(test_relative_path, path)
 		if match is None:
 			# not test file change test file
-			new_path = path.replace(test_relative_path, test_relative_path + self.dir_path['test'])
+			new_path = path.replace(test_root_path, test_root_path + test_relative_path)
 			if self.major_version == 1 and type != "core":
 				for subdir_name in subdir_list:
 					if re.search(self.dir_path[subdir_name], new_path) is not None:
@@ -1030,7 +1035,7 @@ class Path:
 			new_path = self.add_file_path_test(new_path)
 		else:
 			# test file change not test file
-			new_path = path.replace(self.dir_path['test'], "")
+			new_path = path.replace(test_relative_path, "")
 			if self.major_version == 1 and type != "core":
 				for subdir_name in subdir_list:
 					if re.search(self.dir_path[subdir_name + "_test"], new_path) is not None:
