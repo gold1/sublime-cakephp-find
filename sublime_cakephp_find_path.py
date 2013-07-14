@@ -1166,6 +1166,8 @@ class Path:
 				if len(str) == 0: continue
 				grep_include_list.append(str)
 		# add string
+		for extension in self.execute_extension_list:
+			grep_exclude_list.append("*." + extension)
 		grep_exclude_list.extend([
 			"*.sql"
 		])
