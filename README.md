@@ -101,13 +101,18 @@ class SamplesController extends Controller {
 
 ## Grep
 
+- You can search the word in current directory.
+- exclude tmp directory and several extension file
+
 | Command | Function | 
 | --- | --- |
 | `ctrl + shift + c`, `s`, `g` | cake_grep | 
 
-![](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0002.png)
+#### Example
 
-- if you want to add or delete the string in "where", you need to write on settings.
+![grep](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0002.png)
+
+- If you want to add or delete the string in "Where", you need to write on settings.
 
 Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
 ```json
