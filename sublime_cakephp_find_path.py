@@ -758,35 +758,42 @@ class Path:
 	def set_view_extension(self, ext):
 		self.view_extension = ext
 
-	def get_css_list(self, word, type):
-		file_list = []
-		for file in os.listdir(self.folder_path['css']):
-			if os.path.isfile(self.folder_path['css'] + file):
-				file_list.append(file)
-		if len(file_list) == 0: return None
-		file_list.sort()
+	def search_css_list(self, view, name, type):
+		thread_parent = self
+		thread_parent_view = view
+		class SearchCssWordThread(threading.Thread):
+			def run(self):
+				file_list = []
+				for file in os.listdir(thread_parent.folder_path['css']):
+					if os.path.isfile(thread_parent.folder_path['css'] + file):
+						file_list.append(file)
+				if len(file_list) == 0: return
+				file_list.sort()
 
-		if type == 'id':
-			regexp = "#" + word
-		elif type == 'class':
-			regexp = "\." + word
+				if type == 'id':
+					regexp = "#" + name
+				elif type == 'class':
+					regexp = "\." + name
 
-		css_list = []
-		for file in file_list:
-			line_num = 0
-			for line in open(self.folder_path['css'] + file, 'r'):
-				match = re.search(regexp, line)
-				if match is not None:
-					result = []
-					result.append(file)
-					result.append(line_num)
-					css_list.append(result)
-					break
-				line_num += 1
+				css_list = []
+				for file in file_list:
+					line_num = 0
+					for line in open(thread_parent.folder_path['css'] + file, 'r'):
+						match = re.search(regexp, line)
+						if match is not None:
+							result = []
+							result.append(file)
+							result.append(line_num)
+							css_list.append(result)
+							break
+						line_num += 1
 
-		if len(css_list) == 0:
-			return None
-		return css_list
+				if len(css_list) == 0:
+					return
+				sublime.set_timeout(functools.partial(thread_parent.show_css_list,
+									thread_parent_view,
+									css_list), 0)
+		SearchCssWordThread().start()
 
 	def show_css_list(self, view, css_list):
 		self.show_list_view = view

@@ -265,12 +265,9 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 				type = 'class'
 		if name is None:
 			return False
-		list = self.path.get_css_list(name, type)
-		if list is None:
-			return False
-		self.copy_word_to_find_panel('css_word')
 		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
-		self.path.show_css_list(self.view, list)
+		self.copy_word_to_find_panel('css_word')
+		self.path.search_css_list(self.view, name, type)
 		return True
 
 	def is_background_image(self):
