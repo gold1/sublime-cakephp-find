@@ -268,7 +268,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		list = self.path.get_css_list(name, type)
 		if list is None:
 			return False
-		copy_word_to_find_panel(self, 'css_word')
+		self.copy_word_to_find_panel('css_word')
 		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
 		self.path.show_css_list(self.view, list)
 		return True
