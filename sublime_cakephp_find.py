@@ -450,6 +450,13 @@ class CakeFindCommand(SublimeCakephpFind):
 			sublime.status_message("Can't find file.")
 			return
 
+class CakeGrepCommand(SublimeCakephpFind):
+	def run(self, edit):
+		if not self.set_app_path():
+			return False
+		where = self.path.get_grep_where(self.view, self.user_settings)
+		self.view.window().run_command("show_panel", {"panel": "find_in_files", "where": where})
+
 class CakeSwitchToModelCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():

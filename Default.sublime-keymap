@@ -1,5 +1,6 @@
 [
     { "keys": ["ctrl+shift+c", "f"], "command": "cake_find" },
+    { "keys": ["ctrl+shift+c", "s", "g"], "command": "cake_grep" },
     { "keys": ["ctrl+shift+c", "m"], "command": "cake_switch_to_model" },
     { "keys": ["ctrl+shift+c", "v"], "command": "cake_switch_to_view" },
     { "keys": ["ctrl+shift+c", "c"], "command": "cake_switch_to_controller" },

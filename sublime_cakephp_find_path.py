@@ -70,6 +70,14 @@ class CommandThread(threading.Thread):
 
 class Path:
 	def __init__(self):
+		self.execute_extension_list = [
+			"jpeg", "jpe", "jpg", "gif", "png", "bmp", "dib", "tif", "tiff", "ico",
+			"doc", "docx", "dot", "dotx", "xls", "xlsx", "ppt", "pptx",
+			"ai", "dwt", "fla", "indd", "psd", "pdf",
+			"asf", "asx", "acd", "au", "avi", "aif", "mid", "midi", "mov", "mp3", "mpg", "swf", "wav", "wma",
+			"zip", "lzh", "tar", "gz", "tgz", "cab",
+			"exe", "dll", "jar"
+		]
 		return
 
 	def set_app(self, view):
@@ -78,6 +86,7 @@ class Path:
 		self.folder_path['core'] = None
 		self.folder_path['core_list_root'] = None
 		self.view_extension = 'ctp'
+		self.app_dir_name = None
 		self.core_list = None
 		self.open_file_view = None
 		self.open_file_callback = None
@@ -85,6 +94,9 @@ class Path:
 		(self.folder_path['root'], self.folder_path['app']) = self.find_root(view)
 		if self.folder_path['root'] == False:
 			return False
+		if self.folder_path['app']:
+			app_dir_name = self.folder_path['app'].replace(self.folder_path['root'], "")
+			self.app_dir_name = app_dir_name.replace("/", "")
 		if not self.set_major_version():
 			return False
 		self.set_core_list_root()
@@ -260,7 +272,7 @@ class Path:
 			self.folder_path[category] = self.folder_path['core'] + self.dir_path[category]
 
 	def get_this_dir(self, view):
-		return os.path.dirname(self.convert_file_path(view))
+		return os.path.dirname(self.convert_file_path(view)) + "/"
 
 	def match(self, pattern, string):
 		match = re.search(pattern, string)
@@ -485,13 +497,7 @@ class Path:
 			self.switch_to_file(self.show_list_dir + selected, self.show_list_view )
 
 	def is_execute_extension(self, path):
-		list = ["jpeg", "jpe", "jpg", "gif", "png", "bmp", "dib", "tif", "tiff", "ico",
-			"doc", "docx", "dot", "dotx", "xls", "xlsx", "ppt", "pptx",
-			"ai", "dwt", "fla", "indd", "psd", "pdf",
-			"asf", "asx", "acd", "au", "avi", "aif", "mid", "midi", "mov", "mp3", "mpg", "swf", "wav", "wma",
-			"zip", "lzh", "tar", "gz", "tgz", "cab",
-			"exe", "dll", "jar"]
-		for extension in list:
+		for extension in self.execute_extension_list:
 			if path[-len("." + extension):] == "." + extension:
 				return True
 		return False
@@ -1078,3 +1084,35 @@ class Path:
 			return self.switch_to_file(file_path, view)
 		return False
 
+	def get_grep_where(self, view, settings):
+		grep_exclude_list = []
+		grep_include_list = []
+		# -*app/tmp*
+		if self.app_dir_name is not None:
+			grep_exclude_list.append("*" + self.app_dir_name + "/tmp*")
+		# user setting
+		if ("grep_exclude_list" in settings and len(settings["grep_exclude_list"]) > 0):
+			for str in settings["grep_exclude_list"]:
+				if len(str) == 0: continue
+				grep_exclude_list.append(str)
+		if ("grep_include_list" in settings and len(settings["grep_include_list"]) > 0):
+			for str in settings["grep_include_list"]:
+				if len(str) == 0: continue
+				grep_include_list.append(str)
+		# add string
+		grep_exclude_list.extend([
+			"*.sql"
+		])
+		# delete duplicate
+		sorted(set(grep_exclude_list), key=grep_exclude_list.index)
+		sorted(set(grep_include_list), key=grep_include_list.index)
+		# remove from exclude
+		for str in grep_include_list:
+			if str in grep_exclude_list:
+				grep_exclude_list.remove(str)
+
+		where = self.get_this_dir(view)
+		if len(grep_exclude_list) > 0:
+			for str in grep_exclude_list:
+				where += ",-" + str
+		return where

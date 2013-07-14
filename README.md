@@ -99,6 +99,25 @@ class SamplesController extends Controller {
 | --- | --- | --- |
 | `ctrl + shift + c`, `s`, `f` | current directory |cake_open_folder | 
 
+## Grep
+
+| Command | Function | 
+| --- | --- |
+| `ctrl + shift + c`, `s`, `g` | cake_grep | 
+
+![](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0002.png)
+
+- if you want to add or delete the string in "where", you need to write on settings.
+
+Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
+```json
+    "sublime_cakephp_find":
+    {
+        "grep_exclude_list": ["*.sh", "*.md"],
+        "grep_include_list": [""]
+    }
+```
+
 
 ## Find file
 
