@@ -155,7 +155,6 @@ class Path:
 		return None
 
 	def set_folder_path(self):
-		self.dir_path['authenticate'] = "Controller/Component/Auth/"
 		self.dir_path['css'] = "webroot/css/"
 		self.dir_path['javascript'] = "webroot/js/"
 		self.dir_path['image'] = "webroot/img/"
@@ -169,6 +168,9 @@ class Path:
 			self.dir_path['behavior'] = "models/behaviors/"
 			self.dir_path['helper'] = "views/helpers/"
 			self.dir_path['lib'] = "libs/"
+			self.dir_path['authenticate'] = "Controller/Component/Auth/" # not found
+			self.dir_path['acl'] = "Controller/Component/Acl/" # not found
+			self.dir_path['datasource'] = "models/datasources/"
 			self.dir_path['vendor'] = "vendors/"
 			self.dir_path['layout'] = "views/layouts/"
 			self.dir_path['element'] = "views/elements/"
@@ -204,6 +206,9 @@ class Path:
 			self.dir_path['behavior'] = "Model/Behavior/"
 			self.dir_path['helper'] = "View/Helper/"
 			self.dir_path['lib'] = "Lib/"
+			self.dir_path['authenticate'] = "Controller/Component/Auth/"
+			self.dir_path['acl'] = "Controller/Component/Acl/"
+			self.dir_path['datasource'] = "Model/Datasource/"
 			self.dir_path['vendor'] = "Vendor/"
 			self.dir_path['layout'] = "View/Layouts/"
 			self.dir_path['element'] = "View/Elements/"
@@ -232,7 +237,6 @@ class Path:
 				self.dir_path['core_lib'] = "Utility/"
 
 		list = [
-			'authenticate',
 			'css',
 			'javascript',
 			'image',
@@ -245,6 +249,9 @@ class Path:
 			'behavior',
 			'helper',
 			'lib',
+			'authenticate',
+			'acl',
+			'datasource',
 			'vendor',
 			'layout',
 			'element',
@@ -523,6 +530,10 @@ class Path:
 		if not os.path.exists(root):
 			return False
 
+		# check direct
+		if os.path.exists(root + search_file_name):
+			return root + search_file_name
+
 		list = os.listdir(root)
 		for name in list:
 			if os.path.isdir(root + name):
@@ -530,27 +541,62 @@ class Path:
 				if dir_result == False:
 					continue
 				return dir_result
-			if os.path.isfile(root + name) and search_file_name == name:
-				return root + name
+			#if os.path.isfile(root + name) and search_file_name == name:
+			#	return root + name
 		return False
 
 	def search_class_file_all_dir(self, search_class_name, current_file_type=None):
+		# 1
+		# app/controllers/components/
+		# app/models/
+		# app/models/behaviors/
+		# app/models/datasources/
+		# app/views/helpers/
+		# app/libs/ ../
+		# app/vendors/ ../
+		# app/plugins/****/
+		# cake/libs/ ../
+		# 2
+		# app/Controller/Component/
+		# app/Controller/Component/Auth/
+		# app/Controller/Component/Acl/
+		# app/Model/
+		# app/Model/Behavior/
+		# app/Model/Datasource/
+		# app/View/Helper/
+		# app/Lib/ ../
+		# app/Vendor/ ../
+		# app/Plugin/****/
+		# lib/Cake/ ../
 		if self.major_version == 1:
 			file_name = Inflector().underscore(search_class_name)
 		elif self.major_version == 2:
 			file_name = search_class_name
-		dir_list = ["lib", "vendor", "view", "controller", "model", "authenticate"]
-		for dir_name in dir_list:
+		# check direct
+		direct_dir_list = ["component", "model", "behavior", "helper", "controller", "datasource", "authenticate", "acl"]
+		for dir_name in direct_dir_list:
+			if os.path.exists(self.folder_path[dir_name] + file_name + ".php"):
+				return self.folder_path[dir_name] + file_name + ".php"
+		# search recursive
+		recursive_dir_list = ["lib", "vendor"]
+		for dir_name in recursive_dir_list:
 			file_path = self.search_file_recursive(file_name + ".php", self.folder_path[dir_name])
 			if file_path:
 				return file_path
 
-		dir_list = self.get_search_add_dir_list(current_file_type)
-		if current_file_type == 'view' or current_file_type == 'helper':
-			search_class_name = self.modify_helper_class_name(search_class_name)
-		for class_type in dir_list:
-			file_path = self.search_file_recursive(self.complete_file_name(class_type, search_class_name), self.folder_path[class_type])
-			if file_path: return file_path
+		add_dir_list = self.get_search_add_dir_list(current_file_type)
+		# check direct
+		if self.major_version == 2:
+			# Find "Comment" ->
+			# Ver.1 : comment.php
+			# Ver.2 : CommentComponent.php
+			new_class_name = search_class_name
+			if current_file_type == 'view' or current_file_type == 'helper':
+				new_class_name = self.modify_helper_class_name(new_class_name)
+			for class_type in add_dir_list:
+				complete_name = self.complete_file_name(class_type, new_class_name)
+				if os.path.exists(self.folder_path[class_type] + complete_name):
+					return self.folder_path[class_type] + complete_name
 
 		self.search_class_file_plugin_all(search_class_name, current_file_type)
 
@@ -559,7 +605,7 @@ class Path:
 			file_path = self.search_core_file_recursive(file_name, self.core_list, self.folder_path['core_list_root'])
 			if file_path:
 				return file_path
-			for class_type in dir_list:
+			for class_type in add_dir_list:
 				file_path = self.search_core_file_recursive(self.complete_core_list_name(class_type, file_name), self.core_list, self.folder_path['core_list_root'])
 				if file_path: return file_path
 		return False
@@ -567,20 +613,14 @@ class Path:
 	def search_class_file_plugin_all(self, search_class_name, current_file_type=None, plugin_name = None):
 		if self.major_version == 1:
 			file_name = Inflector().underscore(search_class_name)
-			plugin_name = Inflector().underscore(plugin_name)
+			if plugin_name is not None:
+				plugin_name = Inflector().underscore(plugin_name)
 		elif self.major_version == 2:
 			file_name = search_class_name
 
-		file_path = self.search_plugin_file(file_name + ".php", plugin_name)
+		file_path = self.search_plugin_file(file_name + ".php", current_file_type, plugin_name)
 		if file_path:
 			return file_path
-
-		list = self.get_search_add_dir_list(current_file_type)
-		if current_file_type == 'view' or current_file_type == 'helper':
-			search_class_name = self.modify_helper_class_name(search_class_name)
-		for class_type in list:
-			file_path = self.search_plugin_file(self.complete_file_name(class_type, search_class_name), plugin_name)
-			if file_path: return file_path
 		return False
 
 	def search_core_file_recursive(self, search_file_name, content_dict, root):
@@ -618,8 +658,21 @@ class Path:
 			class_name = class_name[0:1].upper() + class_name[1:len(class_name)]
 		return class_name
 
-	def search_plugin_file(self, search_file_name, plugin_name = None):
-		#file_path = self.search_file_recursive(search_file_name, self.folder_path['plugin'])
+	def search_plugin_file(self, search_file_name, current_file_type = None, plugin_name = None):
+		direct_sub_dir_list = [
+			self.dir_path['controller'],
+			self.dir_path['component'],
+			self.dir_path['model'],
+			self.dir_path['behavior'],
+			self.dir_path['helper'],
+			self.dir_path['datasource'],
+			self.dir_path['authenticate'],
+			self.dir_path['acl'],
+		]
+		recursive_sub_dir_list = [
+			self.dir_path['lib'],
+			self.dir_path['vendor'],
+		]
 		root = self.folder_path['plugin']
 		list = os.listdir(root)
 		for name in list:
@@ -629,17 +682,22 @@ class Path:
 				continue
 			if os.path.isdir(root + name):
 				dir_path = root + name + "/"
-				sub_dir_list = [
-					self.dir_path['controller'],
-					self.dir_path['model'],
-					self.dir_path['helper'],
-					self.dir_path['lib'],
-					self.dir_path['vendor'],
-				]
-				for sub_dir_name in sub_dir_list:
+				# check direct
+				for sub_dir_name in direct_sub_dir_list:
+					if os.path.exists(dir_path + sub_dir_name + search_file_name):
+						return dir_path + sub_dir_name + search_file_name
+				# check recursive
+				for sub_dir_name in recursive_sub_dir_list:
 					file_path = self.search_file_recursive(search_file_name, dir_path + sub_dir_name)
 					if file_path:
 						return file_path
+				# check direct
+				if self.major_version == 2:
+					list = self.get_search_add_dir_list(current_file_type)
+					for class_type in list:
+						complete_file_name = self.complete_file_name(class_type, search_file_name)
+						if os.path.exists(dir_path + self.dir_path[class_type] + complete_file_name):
+							return dir_path + self.dir_path[class_type] + complete_file_name
 		return False
 
 	def complete_file_name(self, type, name, ext_flag = True):
@@ -696,6 +754,8 @@ class Path:
 		return None
 
 	def complete_core_list_name(self, type, name):
+		# "Comment" component class file is "comment.php"
+		# but "_component" word is added in core list
 		if type == 'component':
 			if self.major_version == 1:
 				return self.check_and_add_tail(Inflector().underscore(name), '_component')
@@ -711,6 +771,8 @@ class Path:
 				return self.check_and_add_tail(Inflector().underscore(name), '_helper')
 			elif self.major_version == 2:
 				return self.check_and_add_tail(Inflector().camelize(name), 'Helper')
+		elif type == 'authenticate':
+			return self.check_and_add_tail(Inflector().camelize(name), 'Authenticate')
 		return None
 
 	def check_and_add_tail(self, name, add_name):
@@ -1009,7 +1071,7 @@ class Path:
 		# app/tests/cases/ (5)
 		# app/plugins/debug_kit/
 		# app/plugins/debug_kit/tests/cases/  (5)
-		# core -- /cake
+		# core -- /cake/libs/
 		# core -- /cake/tests/cases/libs/ :relative
 		#
 		# 2
@@ -1022,21 +1084,21 @@ class Path:
 		subdir_list = ["component", "behavior", "helper"]
 		path = self.convert_file_path(view)
 		if type == "app":
-			test_root_path = self.folder_path['app']
-			test_relative_path = self.dir_path['test']
+			root_path = self.folder_path['app']
+			test_path = self.folder_path['test']
 		elif type == "plugin":
 			exclude_plugin_path = path.replace(self.folder_path['plugin'], "")
 			split = exclude_plugin_path.split("/")
-			test_root_path = self.folder_path['plugin'] + split[0] + "/"
-			test_relative_path = self.dir_path['test']
+			root_path = self.folder_path['plugin'] + split[0] + "/"
+			test_path = root_path + self.dir_path['test']
 		elif type == "core":
-			test_root_path = self.folder_path['core_test'].replace(self.dir_path['core_test_relative'], "")
-			test_relative_path = self.dir_path['core_test_relative']
+			root_path = self.folder_path['core']
+			test_path = self.folder_path['core_test']
 
-		match = re.search(test_relative_path, path)
+		match = re.search(test_path, path)
 		if match is None:
 			# not test file change test file
-			new_path = path.replace(test_root_path, test_root_path + test_relative_path)
+			new_path = path.replace(root_path, test_path)
 			if self.major_version == 1 and type != "core":
 				for subdir_name in subdir_list:
 					if re.search(self.dir_path[subdir_name], new_path) is not None:
@@ -1045,7 +1107,7 @@ class Path:
 			new_path = self.add_file_path_test(new_path)
 		else:
 			# test file change not test file
-			new_path = path.replace(test_relative_path, "")
+			new_path = path.replace(test_path, root_path)
 			if self.major_version == 1 and type != "core":
 				for subdir_name in subdir_list:
 					if re.search(self.dir_path[subdir_name + "_test"], new_path) is not None:
