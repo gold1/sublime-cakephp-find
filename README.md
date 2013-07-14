@@ -3,7 +3,6 @@ sublime-cakephp-find
 You can find out file and open easily.
 
 ## Requirements
-
 - Sublime Text 2.x
 - CakePHP ver.1.3.x or ver.2.x
 
@@ -27,7 +26,7 @@ You can find out file and open easily.
     Copy the directory to: "C:\Documents and Settings\<username>\Application Data\Sublime Text 2\Packages"
 
 ## Switch Command
-- It changes to a corresponding file. 
+It changes to a corresponding file. 
 
 | Command | File | Function |
 | --- | --- | --- |
@@ -63,7 +62,7 @@ class SamplesController extends Controller {
 ```
 
 ## Open directory
-- You can choose file from panel.
+You can choose file from panel.
 
 | Command | Directory |Function | 
 | --- | --- | --- |
@@ -87,8 +86,7 @@ class SamplesController extends Controller {
 
 
 #### Example
-
-- controller directory
+controller directory
 
 ![controller](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0001.png)
 
@@ -100,8 +98,7 @@ class SamplesController extends Controller {
 | `ctrl + shift + c`, `s`, `f` | current directory |cake_open_folder | 
 
 ## Grep
-
-- You can search the word in current directory.
+- This uses the find panel of Sublime Text.
 - exclude tmp directory and several extension file
 
 | Command | Function | 
@@ -109,10 +106,9 @@ class SamplesController extends Controller {
 | `ctrl + shift + c`, `s`, `g` | cake_grep | 
 
 #### Example
-
 ![grep](https://raw.github.com/gold1/sublime-cakephp-find/master/docs/0002.png)
 
-- If you want to add or delete the string in "Where", you need to write on settings.
+If you want to add or delete the string in "Where", you need to write on settings.
 
 Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
 ```json
@@ -125,15 +121,13 @@ Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
 
 
 ## Find file
-
-- A command to jump to file for the current word.
+A command to jump to file for the current word.
 
 | Command | Function |
 | --- | --- |
 | `ctrl + shift + c`, `f` | cake_find |
 
 ### Example
-
 ```php
 <?php
     //app/Controller/SamplesController.php
@@ -187,18 +181,15 @@ Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
 
-
 ## Run Test
 If you want to run test, we recommend you this plug-in.
 
 - [jwindmuller / SublimeCake](https://github.com/jwindmuller/SublimeCake)
 
 ## License
-
 BSD License
 
 ## Reference
-
 Reference code, Thank you.
 
 - [bermi](https://github.com/bermi) / [Python-Inflector](https://github.com/bermi/Python-Inflector)
