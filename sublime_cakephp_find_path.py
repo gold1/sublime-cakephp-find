@@ -763,12 +763,9 @@ class Path:
 		thread_parent_view = view
 		class SearchCssWordThread(threading.Thread):
 			def run(self):
-				file_list = []
-				for file in os.listdir(thread_parent.folder_path['css']):
-					if os.path.isfile(thread_parent.folder_path['css'] + file):
-						file_list.append(file)
-				if len(file_list) == 0: return
-				file_list.sort()
+				path_list = thread_parent.get_file_list_recursive(thread_parent.folder_path['css'])
+				if len(path_list) == 0: return
+				path_list = thread_parent.sort_slash_path_list(path_list)
 
 				if type == 'id':
 					regexp = "#" + name
@@ -776,13 +773,14 @@ class Path:
 					regexp = "\." + name
 
 				css_list = []
-				for file in file_list:
+				for path in path_list:
 					line_num = 0
-					for line in open(thread_parent.folder_path['css'] + file, 'r'):
+					for line in open(path, 'r'):
 						match = re.search(regexp, line)
 						if match is not None:
 							result = []
-							result.append(file)
+							relative_path = path.replace(thread_parent.folder_path['css'], "")
+							result.append(relative_path)
 							result.append(line_num)
 							css_list.append(result)
 							break
@@ -899,7 +897,6 @@ class Path:
 		# recursive num --
 		if "recursive_num" in options:
 			options["recursive_num"] = options["recursive_num"] - 1
-
 
 		list = os.listdir(root)
 		for name in list:
@@ -1123,3 +1120,19 @@ class Path:
 			for str in grep_exclude_list:
 				where += ",-" + str
 		return where
+
+	def sort_slash_path_list(self, list):
+		new_list = []
+		slash_list = {}
+		# depth sort
+		for path in list:
+			num = str(len(path.split("/")))
+			if not num in slash_list:
+				slash_list[num] = []
+			slash_list[num].append(path)
+		# sort
+		for num, sub_list in sorted(slash_list.items()):
+			sub_list.sort()
+			for path in sub_list:
+				new_list.append(path)
+		return new_list
