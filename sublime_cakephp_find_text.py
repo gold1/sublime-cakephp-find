@@ -44,7 +44,7 @@ class Text:
 		select_word = view.substr(select_region)
 		select_css_tag_region = self.get_css_tag_word_region(view, select_region)
 		select_css_tag_word = view.substr(select_css_tag_region)
-		enclosed_word = self.get_enclosed_word(view, select_region)
+		enclosed_word = self.get_enclosed_word(view, region)
 		if re.search("(->|::)", select_word) is not None:
 			# get left word
 			select_region = view.word(sublime.Region(select_region.a - 1, select_region.a))
@@ -194,7 +194,7 @@ class Text:
 		return before_region
 
 	def get_enclosed_word(self, view, region):
-		before_region = region
+		before_region = sublime.Region(region.a, region.a)
 		# left
 		while True:
 			new_region = sublime.Region(before_region.a - 1, before_region.b)
