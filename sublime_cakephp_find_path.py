@@ -21,10 +21,10 @@ class CakephpFindCoreList:
 		return
 
 	def set_core_list(self):
-		self.core_list = {}
-		list = ["1", "2"]
+		self.core_list = ['', '', '']
+		list = [1, 2]
 		for version in list:
-			file_path = sublime.packages_path() + "/sublime-cakephp-find/json/core" + version + ".json"
+			file_path = sublime.packages_path() + "/sublime-cakephp-find/json/core" + str(version) + ".json"
 			f = open(file_path)
 			self.core_list[version] = json.load(f)
 			f.close()
@@ -87,7 +87,6 @@ class Path:
 		self.folder_path['core_list_root'] = None
 		self.view_extension = 'ctp'
 		self.app_dir_name = None
-		self.core_list = None
 		self.open_file_view = None
 		self.open_file_callback = None
 		self.open_file_callback_arg = None
@@ -541,8 +540,6 @@ class Path:
 				if dir_result == False:
 					continue
 				return dir_result
-			#if os.path.isfile(root + name) and search_file_name == name:
-			#	return root + name
 		return False
 
 	def search_class_file_all_dir(self, search_class_name, current_file_type=None):
@@ -601,12 +598,11 @@ class Path:
 		self.search_class_file_plugin_all(search_class_name, current_file_type)
 
 		if self.folder_path['core'] is not None:
-			self.set_core_list()
-			file_path = self.search_core_file_recursive(file_name, self.core_list, self.folder_path['core_list_root'])
+			file_path = self.search_core_file(file_name)
 			if file_path:
 				return file_path
 			for class_type in add_dir_list:
-				file_path = self.search_core_file_recursive(self.complete_core_list_name(class_type, file_name), self.core_list, self.folder_path['core_list_root'])
+				file_path = self.search_core_file(self.complete_core_list_name(class_type, file_name))
 				if file_path: return file_path
 		return False
 
@@ -623,16 +619,16 @@ class Path:
 			return file_path
 		return False
 
-	def search_core_file_recursive(self, search_file_name, content_dict, root):
-		for class_name, file_name in content_dict.items():
-			if class_name[0:1] == '>':
-				file_path = self.search_core_file_recursive(search_file_name, file_name['c'], root + file_name['n'] + '/')
-				if file_path: return file_path
-			elif search_file_name == class_name:
-				if file_name == '':
-					return root + class_name + '.php'
-				else:
-					return root + file_name
+	def search_core_file(self, search_file_name):
+		path_list = cakephp_find_core_list.core_list[self.major_version]['path']
+		class_list = cakephp_find_core_list.core_list[self.major_version]['class']
+
+		if search_file_name in class_list:
+			path = path_list[class_list[search_file_name][0]['n']]
+			file_name = class_list[search_file_name][0]['f']
+			if file_name == "":
+				file_name = search_file_name + ".php"
+			return self.folder_path['core_list_root'] + path + file_name
 		return False
 
 	def get_search_add_dir_list(self, current_file_type = None):
@@ -803,11 +799,6 @@ class Path:
 			new_file_path = self.check_and_remove_tail(file_path, 'Test.php')
 			return new_file_path + '.php'
 		return None
-
-	def set_core_list(self):
-		if self.core_list is not None:
-			return
-		self.core_list = cakephp_find_core_list.core_list[str(self.major_version)]
 
 	def set_core_list_root(self):
 		if self.folder_path['core'] is None:
