@@ -1200,3 +1200,9 @@ class Path:
 			for path in sub_list:
 				new_list.append(path)
 		return new_list
+
+	def is_routes_file(self, view):
+		match = re.search("/routes.php$", self.convert_file_path(view))
+		if match is not None:
+			return True
+		return False

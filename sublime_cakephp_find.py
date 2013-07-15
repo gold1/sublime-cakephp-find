@@ -173,9 +173,10 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if (self.is_app_import() or
 			self.is_app_uses() or
 			self.is_new_class() or
-			self.is_enclosed_word() or
 			self.is_local_function() or
 			self.is_email_template() or
+			self.is_route() or
+			self.is_enclosed_word() or
 			self.is_class_operator()):
 			return True
 		return False
@@ -406,6 +407,21 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if not category_path:
 			return False
 		return self.path.switch_to_email_template(self.view, category_path, file_name)
+
+	def is_route(self):
+		if not self.path.is_routes_file(self.view):
+			return False
+		(plugin_name, controller_name, action_name) = Text().match_route(self.select_line_str)
+		if not controller_name:
+			return False
+		category_path = self.path.get_category_path("controller", plugin_name)
+		if not category_path:
+			return False
+		file_path = category_path + self.path.complete_file_name('controller', controller_name)
+		if action_name:
+			self.path.set_open_file_callback(Text().move_point_function, action_name)
+		self.path.switch_to_file(file_path, self.view)
+		return True
 
 	def copy_word_to_find_panel(self, type = 'word'):
 		if type == 'word':

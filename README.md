@@ -151,6 +151,8 @@ A command to jump to file for the current word.
 
 | Word | File |
 | --- | --- |
+| **Config/routes.php** | &nbsp; |
+| array('controller' => 'books', 'action' => 'post') | app/Controller/BooksController.php : post() |
 | **Controller** | &nbsp; |
 | public $layout = 'default'; | app/View/Layouts/default.ctp |
 | $this->layout = 'default'; | app/View/Layouts/default.ctp |

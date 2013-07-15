@@ -492,6 +492,25 @@ class Text:
 			return False
 		return True
 
+	def match_route(self, text):
+		# array('controller' => 'pages')
+		# array('controller' => 'pages', 'action' => 'display')
+		# array('controller' => 'pages', 'action' => 'display', 'home')
+		# array('plugin' => 'debug_kit', 'controller' => 'toolbar_access', 'action' => 'history_state')
+		plugin_name = False
+		controller_name = False
+		action_name = False
+		match = re.search("['\"]controller['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		if match is not None:
+			controller_name = match.group(1)
+		match = re.search("['\"]action['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		if match is not None:
+			action_name = match.group(1)
+		match = re.search("['\"]plugin['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		if match is not None:
+			plugin_name = match.group(1)
+		return plugin_name, controller_name, action_name
+
 
 
 
