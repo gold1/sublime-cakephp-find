@@ -215,7 +215,8 @@ class Text:
 			before_region = new_region
 
 		if (before_word == after_word and
-			before_word == '"' or before_word == "'"):
+			(before_word == '"' or
+			 before_word == "'")):
 			return view.substr(before_region)
 		return False
 
