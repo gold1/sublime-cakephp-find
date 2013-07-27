@@ -97,7 +97,7 @@ class Text:
 			left_type = None
 
 		# set type
-		if word == "this" or word == "self":
+		if word == "this" or word == "self" or word == "static":
 			type = "this"
 		elif right_type == "variable" or right_type == "function":
 			type = right_type
