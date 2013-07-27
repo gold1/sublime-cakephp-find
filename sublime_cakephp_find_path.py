@@ -191,6 +191,7 @@ class Path:
 				self.dir_path['core_test_relative'] = "tests/cases/libs/"
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
+				self.dir_path['core_datasource'] = "model/datasources/"
 				self.dir_path['core_view'] = "view/"
 				self.dir_path['core_component'] = "controller/components/"
 				self.dir_path['core_behavior'] = "model/behaviors/"
@@ -229,6 +230,7 @@ class Path:
 				self.dir_path['core_test_relative'] = self.dir_path['test']
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
+				self.dir_path['core_datasource'] = "Model/Datasource/"
 				self.dir_path['core_view'] = "View/"
 				self.dir_path['core_component'] = "Controller/Component/"
 				self.dir_path['core_behavior'] = "Model/Behavior/"
@@ -268,6 +270,7 @@ class Path:
 		list = [
 			'core_controller',
 			'core_model',
+			'core_datasource',
 			'core_view',
 			'core_component',
 			'core_behavior',
@@ -867,10 +870,10 @@ class Path:
 
 	def get_category_path(self, category, plugin_name = False, options = {}):
 		if 'core' in options:
-			if 'core_' + category in self.dir_path: return False
+			if not 'core_' + category in self.dir_path: return False
 			return self.folder_path['core_' + category]
 		if 'test' in options:
-			if category + '_test' in self.dir_path: return False
+			if not category + '_test' in self.dir_path: return False
 			return self.folder_path[category + '_test']
 
 		if not category in self.dir_path: return False
@@ -1197,4 +1200,15 @@ class Path:
 		match = re.search("/routes.php$", self.convert_file_path(view))
 		if match is not None:
 			return True
+		return False
+
+	def path_to_datasource(self, view, plugin_name, text):
+		category_path = self.get_category_path('datasource', plugin_name)
+		path = category_path + text + ".php"
+		if (os.path.exists(path)):
+			return self.switch_to_file(path, view)
+		category_path = self.get_category_path('datasource', False, {'core': True})
+		path = category_path + text + ".php"
+		if (os.path.exists(path)):
+			return self.switch_to_file(path, view)
 		return False

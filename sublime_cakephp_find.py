@@ -175,6 +175,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_new_class() or
 			self.is_local_function() or
 			self.is_email_template() or
+			self.is_datasource() or
 			self.is_route() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
@@ -390,6 +391,12 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			return False
 		self.path.set_open_file_callback(Text().move_point_msgid, msg_id)
 		return self.path.switch_to_locale(self.view, plugin_name)
+
+	def is_datasource(self):
+		(plugin_name, text) = Text().match_datasource(self.select_line_str)
+		if not text:
+			return False
+		return self.path.path_to_datasource(self.view, plugin_name, text)
 
 	def is_email_template(self):
 		(template_name, layout_name) = Text().match_email_template(self.select_line_str)

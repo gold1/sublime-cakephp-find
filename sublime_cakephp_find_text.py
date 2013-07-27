@@ -511,6 +511,19 @@ class Text:
 			plugin_name = match.group(1)
 		return plugin_name, controller_name, action_name
 
+	def match_datasource(self, text):
+		# 'datasource' => 'Database/Mysql',
+		# $default['datasource'] = 'Database/Mysql';
+		plugin_name = False
+		path = False
+		match = re.search("['\"]datasource['\"]\]?[ \t]*=>?[ \t]*['\"]([a-zA-Z0-9_/\.]+)['\"]", text)
+		if match is not None:
+			split = match.group(1).split('.')
+			path = split[-1]
+			if len(split) > 1:
+				plugin_name = split[0]
+		return plugin_name, path
+
 
 
 

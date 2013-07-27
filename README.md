@@ -179,6 +179,7 @@ A command to jump to file for the current word.
 | CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
 | $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
 | $Email->template('default'); | app/View/Emails/text/default.ctp |
+| 'datasource' => 'Database/Mysql' | lib/Cake/Model/Datasource/Database/Mysql.php |
 | $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
