@@ -1141,21 +1141,22 @@ class Path:
 			return self.switch_to_file(file_path, view)
 		return False
 
-	def get_grep_where(self, view, settings):
+	def get_grep_where(self, view, settings = None):
 		grep_exclude_list = []
 		grep_include_list = []
 		# -*app/tmp*
 		if self.app_dir_name is not None:
 			grep_exclude_list.append("*" + self.app_dir_name + "/tmp*")
 		# user setting
-		if ("grep_exclude_list" in settings and len(settings["grep_exclude_list"]) > 0):
-			for str in settings["grep_exclude_list"]:
-				if len(str) == 0: continue
-				grep_exclude_list.append(str)
-		if ("grep_include_list" in settings and len(settings["grep_include_list"]) > 0):
-			for str in settings["grep_include_list"]:
-				if len(str) == 0: continue
-				grep_include_list.append(str)
+		if settings is not None:
+			if ("grep_exclude_list" in settings and len(settings["grep_exclude_list"]) > 0):
+				for str in settings["grep_exclude_list"]:
+					if len(str) == 0: continue
+					grep_exclude_list.append(str)
+			if ("grep_include_list" in settings and len(settings["grep_include_list"]) > 0):
+				for str in settings["grep_include_list"]:
+					if len(str) == 0: continue
+					grep_include_list.append(str)
 		# add string
 		for extension in self.execute_extension_list:
 			grep_exclude_list.append("*." + extension)

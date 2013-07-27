@@ -191,6 +191,10 @@ If you want to run test, we recommend you this plug-in.
 ## License
 BSD License
 
+## Version
+
+#### 0.8.x
+
 ## Reference
 Reference code, Thank you.
 
