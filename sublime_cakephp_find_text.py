@@ -133,7 +133,7 @@ class Text:
 
 	def search_before_new_class(self, variable_name, content):
 		class_name = False
-		matches = re.finditer("\$" + variable_name + "[ \t]+=[ \t]+new[ \t]+([a-zA-Z0-9_]+)[(;]", content)
+		matches = re.finditer("\$" + variable_name + "[ \t]*=[ \t]*new[ \t]+([a-zA-Z0-9_]+)[(;]", content)
 		for match in matches:
 			class_name = match.group(1)
 		return class_name
@@ -433,7 +433,8 @@ class Text:
 	def match_redirect_function(self, line_content):
 		# $this->redirect('/orders/thanks'));
 		# $this->redirect(array('controller' => 'orders', 'action' => 'thanks'));
-		match = re.search("redirect\((.*?)\);$", line_content)
+		# $this->redirect(array('action' => 'thanks'));
+		match = re.search("redirect\((.*?)\)$", line_content)
 		if match is None:
 			return None, None
 		controller_name = None
@@ -441,10 +442,10 @@ class Text:
 		content = match.group(1)
 		match = re.search("(array\(|\[)", content)
 		if match is not None:
-			match = re.search("controller['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", content)
+			match = re.search("controller['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_]+)['\"]", content)
 			if match is not None:
 				controller_name = match.group(1)
-			match = re.search("action['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", content)
+			match = re.search("action['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_]+)['\"]", content)
 			if match is not None:
 				action_name = match.group(1)
 		else:
@@ -464,7 +465,7 @@ class Text:
 			return False, match.group(1)
 		# __d("domain", "Hello!");
 		# __dc("domain", "Hello!");
-		match = re.search("__d[c]?\(['\"](.*?)['\"],[ \t]+['\"](.*?)['\"][,\)]", line_content)
+		match = re.search("__d[c]?\(['\"](.*?)['\"],[ \t]*['\"](.*?)['\"][,\)]", line_content)
 		if match is not None:
 			return match.group(1), match.group(2)
 		return False, False
@@ -474,7 +475,7 @@ class Text:
 		# ->template('default', 'default');
 		# ->template(false, 'default');
 		# ->template('DebugKit.default', 'DebugKit.default');
-		match = re.search("->template\((false|['\"]([a-zA-Z0-9_\.]+)['\"])(,[ \t]+['\"]([a-zA-Z0-9_\.]+)['\"])?", line_content)
+		match = re.search("->template\((false|['\"]([a-zA-Z0-9_\.]+)['\"])(,[ \t]*['\"]([a-zA-Z0-9_\.]+)['\"])?", line_content)
 		if match is None:
 			return False, False
 		template_name = match.group(2)
@@ -501,13 +502,13 @@ class Text:
 		plugin_name = False
 		controller_name = False
 		action_name = False
-		match = re.search("['\"]controller['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		match = re.search("['\"]controller['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_]+)['\"]", text)
 		if match is not None:
 			controller_name = match.group(1)
-		match = re.search("['\"]action['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		match = re.search("['\"]action['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_]+)['\"]", text)
 		if match is not None:
 			action_name = match.group(1)
-		match = re.search("['\"]plugin['\"][ \t]+=>[ \t]+['\"]([a-zA-Z0-9_]+)['\"]", text)
+		match = re.search("['\"]plugin['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_]+)['\"]", text)
 		if match is not None:
 			plugin_name = match.group(1)
 		return plugin_name, controller_name, action_name
