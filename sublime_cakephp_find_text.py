@@ -525,6 +525,76 @@ class Text:
 			if len(split) > 1:
 				plugin_name = split[0]
 		return plugin_name, path
+	
+	def match_include_require(self, text):
+		# 	if (!include ('Cake' . DS . 'bootstrap.php')) {
+		#   if (!include APP . 'Config' . DS . 'core.php') {
+		# 	include_once APP . 'Config' . DS . 'database.php';
+		# 	include APP . 'Config' . DS . 'routes.php';
+		#   require CAKE . 'Error' . DS . 'exceptions.php';
+		#   require_once dirname(dirname(dirname(dirname(__FILE__)))) . DS . 'Model' . DS . 'models.php';
+		# 	require_once CORE_TEST_CASES . DS . 'Log' . DS . 'Engine' . DS . 'ConsoleLogTest.php';
+		#   require_once (APP . 'Config' . DS . 'database.php');
+		words = []
+		match = re.search("(include|include_once|require|require_once)[ \t]+(.*)", text)
+		if match is None:
+			return 0, False
+		line = base_line = match.group(2)
+		parenthesis_count = 0
+		up_dir_count = 0;
+		words = []
+		while (len(line) > 0):
+			if re.search("^([ \t\.]+)", line):
+				line = re.sub("^([ \t\.]+)", "", line)
+				continue
+			elif re.search("^\(", line):
+				line = re.sub("^\(", "", line)
+				parenthesis_count += 1
+				continue
+			elif re.search("^\)", line):
+				line = re.sub("^\)", "", line)
+				parenthesis_count -= 1
+				if parenthesis_count <= 0 and len(words) != 0:
+					break
+				continue
+			elif re.search("^;", line):
+				break
+			elif re.search("^dirname\(dirname\(dirname\(dirname\(", line) and len(words) == 0:
+				line = re.sub("^dirname\(dirname\(dirname\(dirname\(", "", line)
+				up_dir_count += 4;
+				continue
+			elif re.search("^dirname\(dirname\(dirname\(", line) and len(words) == 0:
+				line = re.sub("^dirname\(dirname\(dirname\(", "", line)
+				up_dir_count += 3;
+				continue
+			elif re.search("^dirname\(dirname\(", line) and len(words) == 0:
+				line = re.sub("^dirname\(dirname\(", "", line)
+				up_dir_count += 2;
+				continue
+			elif re.search("^dirname\(", line) and len(words) == 0:
+				line = re.sub("^dirname\(", "", line)
+				up_dir_count += 1;
+				continue
+			elif re.search("^__DIR__", line) and len(words) == 0:
+				line = re.sub("^__DIR__", "", line)
+				up_dir_count += 1;
+				continue
+			elif re.search("^__FILE__", line) and len(words) == 0:
+				line = re.sub("^__FILE__", "", line)
+				continue
+			elif re.search("^(['\"]([a-zA-Z0-9/_\.]+)['\"])", line):
+				match = re.search("^(['\"]([a-zA-Z0-9/_\.]+)['\"])", line)
+				line = re.sub("^" + match.group(1), "", line)
+				words.append(match.group(2))
+				continue
+			# example: APP, CAKE_CORE_INCLUDE_PATH
+			elif re.search("^([A-Z/_]+)", line):
+				match = re.search("^([A-Z/_]+)", line)
+				line = re.sub("^" + match.group(1), "", line)
+				words.append(match.group(1))
+				continue
+			return 0, False
+		return up_dir_count, words
 
 
 

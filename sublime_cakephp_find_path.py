@@ -197,6 +197,12 @@ class Path:
 				self.dir_path['core_behavior'] = "model/behaviors/"
 				self.dir_path['core_helper'] = "view/helpers/"
 				self.dir_path['core_lib'] = ""
+				# cake define path
+				self.folder_path['cake'] = 'cake/'
+				self.folder_path['cake_core_include_path'] = self.folder_path['root'][:-1]
+				self.folder_path['core_path'] = ''
+				self.folder_path['core_test_cases'] = self.folder_path['root'] + 'tests/cases/'
+				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'cases'
 		elif self.major_version == 2:
 			self.dir_path['config'] = "Config/"
 			self.dir_path['controller'] = "Controller/"
@@ -236,6 +242,12 @@ class Path:
 				self.dir_path['core_behavior'] = "Model/Behavior/"
 				self.dir_path['core_helper'] = "View/Helper/"
 				self.dir_path['core_lib'] = "Utility/"
+				# cake define path
+				self.folder_path['cake'] = self.folder_path['root'] + 'lib/Cake/'
+				self.folder_path['cake_core_include_path'] = self.folder_path['root'] + 'lib'
+				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
+				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/Case'
+				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/Case'
 
 		list = [
 			'css',
@@ -1212,3 +1224,39 @@ class Path:
 		if (os.path.exists(path)):
 			return self.switch_to_file(path, view)
 		return False
+	
+	def convert_include_require_word(self, view, up_dir_count, path_words):
+		cake_constants = {
+			'APP': self.folder_path['app'],
+			'APP_DIR': 'app',
+			'APPLIBS': self.folder_path['lib'],
+			'CAKE': self.folder_path['cake'],
+			'CAKE_CORE_INCLUDE_PATH': self.folder_path['cake_core_include_path'],
+			'CORE_PATH': self.folder_path['core_path'],
+			'CSS': self.folder_path['css'],
+			'CSS_URL': 'css/',
+			'IMAGES': self.folder_path['image'],
+			'IMAGES_URL': 'img/',
+			'JS': self.folder_path['javascript'],
+			'JS_URL': 'js/',
+			'ROOT': self.folder_path['root'],
+			'TESTS': self.folder_path['test'],
+			'VENDORS': self.folder_path['vendor'],
+			'WEBROOT_DIR': 'webroot',
+			'WWW_ROOT': self.folder_path['app'] + 'webroot/',
+			'CORE_TEST_CASES': self.folder_path['core_test_cases'],
+			'APP_TEST_CASES': self.folder_path['app_test_cases'],
+			'DS': '/',
+		}
+		path = ''
+		if up_dir_count > 0:
+			path = self.convert_file_path(view)
+			while (up_dir_count > 0):
+				path = os.path.dirname(path)
+				up_dir_count -= 1
+		for word in path_words:
+			if word in cake_constants:
+				path += cake_constants[word]
+			else:
+				path += word
+		return path
