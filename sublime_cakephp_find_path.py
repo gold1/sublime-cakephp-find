@@ -108,12 +108,18 @@ class Path:
 		count_limit = 7
 		while count < count_limit:
 			if (os.path.exists(dirname + "/config/core.php") or
-				os.path.exists(dirname + "/Config/core.php")):
+				os.path.exists(dirname + "/Config/core.php") or
+				os.path.exists(dirname + "/Config/app.php")):
 				return os.path.dirname(dirname) + "/", dirname + "/"
 			# core file
 			elif (os.path.exists(dirname + "/app/config/core.php") or
-				os.path.exists(dirname + "/app/Config/core.php")):
-				return dirname + "/", dirname + "/app/"
+				os.path.exists(dirname + "/app/Config/core.php") or
+				os.path.exists(dirname + "/App/Config/app.php")):
+				if os.path.exists(dirname + "/app"):
+					app_name = "app"
+				else:
+					app_name = "App"
+				return dirname + "/", dirname + "/" + app_name + "/"
 			count += 1
 			dirname = os.path.dirname(dirname)
 		sublime.status_message("Can't find app path.")
@@ -151,6 +157,8 @@ class Path:
 			return 1
 		elif os.path.exists(self.folder_path['app'] + "Controller"):
 			return 2
+		elif os.path.exists(self.folder_path['app'] + "Config/app.php"):
+			return 3
 		return None
 
 	def set_folder_path(self):
@@ -248,6 +256,51 @@ class Path:
 				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
 				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/Case'
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/Case'
+		elif self.major_version == 3:
+			self.dir_path['config'] = "Config/"
+			self.dir_path['controller'] = "Controller/"
+			self.dir_path['model'] = "Model/"
+			self.dir_path['view'] = "View/"
+			self.dir_path['component'] = "Controller/Component/"
+			self.dir_path['behavior'] = "Model/Behavior/"
+			self.dir_path['helper'] = "View/Helper/"
+			self.dir_path['lib'] = "Lib/"
+			self.dir_path['authenticate'] = "Controller/Component/Auth/"
+			self.dir_path['acl'] = "Controller/Component/Acl/"
+			self.dir_path['datasource'] = "Model/Datasource/"
+			self.dir_path['vendor'] = "vendor/"
+			self.dir_path['layout'] = "View/Layouts/"
+			self.dir_path['element'] = "View/Elements/"
+			self.dir_path['error'] = "View/Errors/"
+			self.dir_path['email'] = "View/Emails/"
+			self.dir_path['email_layout'] = "View/Layouts/Emails/"
+			self.dir_path['scaffold'] = "View/Scaffolds/"
+			self.dir_path['plugin'] = "Plugin/"
+			self.dir_path['test'] = "Test/TestCase/"
+			self.dir_path['fixture'] = "Test/Fixture/"
+			self.dir_path['locale'] = "Locale/"
+			self.dir_path['component_test'] = "Controller/Component/"
+			self.dir_path['behavior_test'] = "Model/Behavior/"
+			self.dir_path['helper_test'] = "View/Helper/"
+			if self.folder_path['core'] is not None:
+				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
+				self.folder_path['core_test'] = self.folder_path['root'] + "lib/Cake/Test/TestCase/"
+				self.folder_path['core_fixture'] = self.folder_path['root'] + "lib/Cake/Test/Fixture/"
+				self.dir_path['core_test_relative'] = self.dir_path['test']
+				self.dir_path['core_controller'] = "Controller/"
+				self.dir_path['core_model'] = "Model/"
+				self.dir_path['core_datasource'] = "Model/Datasource/"
+				self.dir_path['core_view'] = "View/"
+				self.dir_path['core_component'] = "Controller/Component/"
+				self.dir_path['core_behavior'] = "Model/Behavior/"
+				self.dir_path['core_helper'] = "View/Helper/"
+				self.dir_path['core_lib'] = "Utility/"
+				# cake define path
+				self.folder_path['cake'] = self.folder_path['root'] + 'lib/Cake/'
+				self.folder_path['cake_core_include_path'] = self.folder_path['root'] + 'lib'
+				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
+				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/Case'
+				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/Case'
 
 		list = [
 			'css',
@@ -305,7 +358,8 @@ class Path:
 	def match_controller_file(self, view):
 		if self.major_version == 1:
 			regexp = self.folder_path['app'] + "controllers/([a-zA-Z0-9_]+)_controller\.php$"
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			regexp = self.folder_path['app'] + ".+/([a-zA-Z0-9_]+)Controller\.php$"
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -346,7 +400,8 @@ class Path:
 	def match_component_file(self, view):
 		if self.major_version == 1:
 			regexp = (self.folder_path['component'] + "([a-zA-Z0-9_]+)\.php$")
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			regexp = (self.folder_path['component'] + "([a-zA-Z0-9_]+)Component\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -356,7 +411,8 @@ class Path:
 	def match_behavior_file(self, view):
 		if self.major_version == 1:
 			regexp = (self.folder_path['behavior'] + "([a-zA-Z0-9_]+)\.php$")
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			regexp = (self.folder_path['behavior'] + "([a-zA-Z0-9_]+)Behavior\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -366,7 +422,8 @@ class Path:
 	def match_helper_file(self, view):
 		if self.major_version == 1:
 			regexp = (self.folder_path['helper'] + "([a-zA-Z0-9_]+)\.php$")
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			regexp = (self.folder_path['helper'] + "([a-zA-Z0-9_]+)Helper\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -582,7 +639,8 @@ class Path:
 		# lib/Cake/ ../
 		if self.major_version == 1:
 			file_name = Inflector().underscore(search_class_name)
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			file_name = search_class_name
 		# check direct
 		direct_dir_list = ["component", "model", "behavior", "helper", "controller", "datasource", "authenticate", "acl"]
@@ -598,7 +656,8 @@ class Path:
 
 		add_dir_list = self.get_search_add_dir_list(current_file_type)
 		# check direct
-		if self.major_version == 2:
+		if (self.major_version == 2 or
+			self.major_version == 3):
 			# Find "Comment" ->
 			# Ver.1 : comment.php
 			# Ver.2 : CommentComponent.php
@@ -626,7 +685,8 @@ class Path:
 			file_name = Inflector().underscore(search_class_name)
 			if plugin_name is not None:
 				plugin_name = Inflector().underscore(plugin_name)
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			file_name = search_class_name
 
 		file_path = self.search_plugin_file(file_name + ".php", current_file_type, plugin_name)
@@ -719,27 +779,32 @@ class Path:
 		if type == 'controller':
 			if self.major_version == 1:
 				return self.check_and_add_tail(Inflector().underscore(new_name), '_controller') + add_ext
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(new_name), 'Controller') + add_ext
 		elif type == 'model':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return Inflector().camelize(new_name) + add_ext
 		elif type == 'component':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(new_name), 'Component') + add_ext
 		elif type == 'behavior':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(new_name), 'Behavior') + add_ext
 		elif type == 'helper':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(new_name), 'Helper') + add_ext
 		elif type == 'authenticate':
 			# self.major_version : 1 is not exist
@@ -770,17 +835,20 @@ class Path:
 		if type == 'component':
 			if self.major_version == 1:
 				return self.check_and_add_tail(Inflector().underscore(name), '_component')
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(name), 'Component')
 		elif type == 'behavior':
 			if self.major_version == 1:
 				return self.check_and_add_tail(Inflector().underscore(name), '_behavior')
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(name), 'Behavior')
 		elif type == 'helper':
 			if self.major_version == 1:
 				return self.check_and_add_tail(Inflector().underscore(name), '_helper')
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				return self.check_and_add_tail(Inflector().camelize(name), 'Helper')
 		elif type == 'authenticate':
 			return self.check_and_add_tail(Inflector().camelize(name), 'Authenticate')
@@ -801,7 +869,8 @@ class Path:
 		if self.major_version == 1:
 			new_file_path = self.check_and_remove_tail(new_file_path, '.test')
 			return new_file_path + '.test.php'
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			new_file_path = self.check_and_remove_tail(new_file_path, 'Test')
 			return new_file_path + 'Test.php'
 		return None
@@ -810,7 +879,8 @@ class Path:
 		if self.major_version == 1:
 			new_file_path = self.check_and_remove_tail(file_path, '.test.php')
 			return new_file_path + '.php'
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			new_file_path = self.check_and_remove_tail(file_path, 'Test.php')
 			return new_file_path + '.php'
 		return None
@@ -820,7 +890,8 @@ class Path:
 			return
 		if self.major_version == 1:
 			self.folder_path['core_list_root'] = self.folder_path['root'] + 'cake/'
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			self.folder_path['core_list_root'] = self.folder_path['root'] + 'lib/'
 
 	def set_view_extension(self, ext):
@@ -892,7 +963,8 @@ class Path:
 		if plugin_name:
 			if self.major_version == 1:
 				plugin_name = Inflector().underscore(plugin_name)
-			elif self.major_version == 2:
+			elif (self.major_version == 2 or
+				self.major_version == 3):
 				plugin_name = Inflector().camelize(plugin_name)
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
@@ -1136,7 +1208,8 @@ class Path:
 			file_name = Inflector().underscore(class_name) + "_fixture.php"
 			if plugin_name:
 				change_plugin_name = Inflector().underscore(plugin_name)
-		elif self.major_version == 2:
+		elif (self.major_version == 2 or
+			self.major_version == 3):
 			file_name = Inflector().camelize(class_name) + "Fixture.php"
 			if plugin_name:
 				change_plugin_name = Inflector().camelize(plugin_name)
