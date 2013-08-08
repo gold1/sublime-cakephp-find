@@ -434,7 +434,7 @@ class Text:
 		# $this->redirect('/orders/thanks'));
 		# $this->redirect(array('controller' => 'orders', 'action' => 'thanks'));
 		# $this->redirect(array('action' => 'thanks'));
-		match = re.search("redirect\((.*?)\)$", line_content)
+		match = re.search("redirect\((.*?)\)", line_content)
 		if match is None:
 			return None, None
 		controller_name = None
