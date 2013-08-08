@@ -21,11 +21,12 @@ class CakephpFindCoreList:
 		return
 
 	def set_core_list(self):
-		self.core_list = ['', '', '']
-		list = [1, 2]
+		self.core_list = ['']
+		list = [1, 2, 3]
 		for version in list:
 			file_path = sublime.packages_path() + "/sublime-cakephp-find/json/core" + str(version) + ".json"
 			f = open(file_path)
+			self.core_list.append('')
 			self.core_list[version] = json.load(f)
 			f.close()
 
