@@ -157,6 +157,8 @@ class Path:
 		self.dir_path['css'] = "webroot/css/"
 		self.dir_path['javascript'] = "webroot/js/"
 		self.dir_path['image'] = "webroot/img/"
+		self.dir_path['tmp'] = "tmp/"
+		self.dir_path['cache'] = "tmp/cache/"
 
 		if self.major_version == 1:
 			self.dir_path['config'] = "config/"
@@ -274,6 +276,8 @@ class Path:
 			'scaffold',
 			'plugin',
 			'test',
+			'tmp',
+			'cache',
 			'fixture',
 			'locale',
 		]
@@ -1228,24 +1232,31 @@ class Path:
 	def convert_include_require_word(self, view, up_dir_count, path_words):
 		cake_constants = {
 			'APP': self.folder_path['app'],
-			'APP_DIR': 'app',
 			'APPLIBS': self.folder_path['lib'],
+			'APP_TEST_CASES': self.folder_path['app_test_cases'],
+			'APP_DIR': 'app',
+			'CACHE': self.folder_path['cache'],
 			'CAKE': self.folder_path['cake'],
 			'CAKE_CORE_INCLUDE_PATH': self.folder_path['cake_core_include_path'],
+			'CAKE_TESTS_LIB': 'cake/tests/lib/', # version 1 only
+			'CONFIGS': self.folder_path['config'], # version 1 only
+			'CONSOLE_LIBS': 'cake/console/libs/', # version 1 only
 			'CORE_PATH': self.folder_path['core_path'],
+			'CORE_TEST_CASES': self.folder_path['core_test_cases'],
 			'CSS': self.folder_path['css'],
 			'CSS_URL': 'css/',
 			'IMAGES': self.folder_path['image'],
 			'IMAGES_URL': 'img/',
 			'JS': self.folder_path['javascript'],
 			'JS_URL': 'js/',
+			'LIBS': 'cake/libs/', # version 1 only
 			'ROOT': self.folder_path['root'],
 			'TESTS': self.folder_path['test'],
+			'TMP': self.folder_path['tmp'],
 			'VENDORS': self.folder_path['vendor'],
 			'WEBROOT_DIR': 'webroot',
 			'WWW_ROOT': self.folder_path['app'] + 'webroot/',
-			'CORE_TEST_CASES': self.folder_path['core_test_cases'],
-			'APP_TEST_CASES': self.folder_path['app_test_cases'],
+			'DIRECTORY_SEPARATOR': '/',
 			'DS': '/',
 		}
 		path = ''
