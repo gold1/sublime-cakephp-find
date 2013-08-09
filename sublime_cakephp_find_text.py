@@ -61,40 +61,47 @@ class Text:
 		if re.search("^[a-zA-Z0-9_]", word) is None:
 			return
 
+		last_point = view.size()
 		sel = Sel()
 		sel.word = word
 
-		right_operator = view.substr(sublime.Region(region.end(), region.end() + 3))
 		right_region = None
-		if re.search("^[,;\.\[\)\]]", right_operator) is not None:
-			right_type = "variable"
-		elif re.search("^\(", right_operator) is not None:
-			right_type = "function"
-		elif re.search("^(->|::)\$", right_operator) is not None:
-			right_type = "object"
-			right_region = view.word(sublime.Region(region.end() + 3, region.end() + 4))
-		elif re.search("^(->|::)", right_operator) is not None:
-			right_type = "object"
-			right_region = view.word(sublime.Region(region.end() + 2, region.end() + 3))
-		elif re.search("^[\r\n{ \t]", right_operator) is not None:
-			right_type = "string"
-		else:
+		if region.end() > last_point - 4:
 			right_type = None
-
-		left_operator = view.substr(sublime.Region(region.begin() -3, region.begin()))
-		left_region = None
-		if re.search("[,\.\r\n \t\(]$", left_operator) is not None:
-			left_type = "class"
-		elif re.search("::\$$", left_operator) is not None:
-			left_type = "object"
-			left_region = view.word(sublime.Region(region.begin() - 4, region.begin() - 3))
-		elif re.search("\$$", left_operator) is not None:
-			left_type = "variable"
-		elif re.search("(->|::)$", left_operator) is not None:
-			left_type = "object"
-			left_region = view.word(sublime.Region(region.begin() - 3, region.begin() - 2))
 		else:
+			right_operator = view.substr(sublime.Region(region.end(), region.end() + 3))
+			if re.search("^[,;\.\[\)\]]", right_operator) is not None:
+				right_type = "variable"
+			elif re.search("^\(", right_operator) is not None:
+				right_type = "function"
+			elif re.search("^(->|::)\$", right_operator) is not None:
+				right_type = "object"
+				right_region = view.word(sublime.Region(region.end() + 3, region.end() + 4))
+			elif re.search("^(->|::)", right_operator) is not None:
+				right_type = "object"
+				right_region = view.word(sublime.Region(region.end() + 2, region.end() + 3))
+			elif re.search("^[\r\n{ \t]", right_operator) is not None:
+				right_type = "string"
+			else:
+				right_type = None
+
+		left_region = None
+		if region.begin() < 4:
 			left_type = None
+		else:
+			left_operator = view.substr(sublime.Region(region.begin() -3, region.begin()))
+			if re.search("[,\.\r\n \t\(]$", left_operator) is not None:
+				left_type = "class"
+			elif re.search("::\$$", left_operator) is not None:
+				left_type = "object"
+				left_region = view.word(sublime.Region(region.begin() - 4, region.begin() - 3))
+			elif re.search("\$$", left_operator) is not None:
+				left_type = "variable"
+			elif re.search("(->|::)$", left_operator) is not None:
+				left_type = "object"
+				left_region = view.word(sublime.Region(region.begin() - 3, region.begin() - 2))
+			else:
+				left_type = None
 
 		# set type
 		if word == "this" or word == "self" or word == "static":
@@ -175,8 +182,11 @@ class Text:
 
 	def get_css_tag_word_region(self, view, region):
 		before_region = region
+		last_point = view.size()
 		# left
 		while True:
+			if before_region.a < 1:
+				break
 			new_region = sublime.Region(before_region.a - 1, before_region.b)
 			word = view.substr(new_region)
 			match = re.search("^[^a-zA-Z0-9\_\-]", word)
@@ -185,6 +195,8 @@ class Text:
 			before_region = new_region
 		# right
 		while True:
+			if before_region.b > last_point - 1:
+				break
 			new_region = sublime.Region(before_region.a, before_region.b + 1)
 			word = view.substr(new_region)
 			match = re.search("[^a-zA-Z0-9\_\-]$", word)
@@ -195,8 +207,12 @@ class Text:
 
 	def get_enclosed_word(self, view, region):
 		before_region = sublime.Region(region.a, region.a)
+		before_word = after_word = ''
+		last_point = view.size()
 		# left
 		while True:
+			if before_region.a < 1:
+				break
 			new_region = sublime.Region(before_region.a - 1, before_region.b)
 			word = view.substr(new_region)
 			match = re.search("^[^a-zA-Z0-9\_\.]", word)
@@ -206,6 +222,8 @@ class Text:
 			before_region = new_region
 		# right
 		while True:
+			if before_region.b > last_point - 1:
+				break
 			new_region = sublime.Region(before_region.a, before_region.b + 1)
 			word = view.substr(new_region)
 			match = re.search("[^a-zA-Z0-9\_\.]$", word)
@@ -434,7 +452,7 @@ class Text:
 		# $this->redirect('/orders/thanks'));
 		# $this->redirect(array('controller' => 'orders', 'action' => 'thanks'));
 		# $this->redirect(array('action' => 'thanks'));
-		match = re.search("redirect\((.*?)\)$", line_content)
+		match = re.search("redirect\((.*?)\)", line_content)
 		if match is None:
 			return None, None
 		controller_name = None

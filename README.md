@@ -154,8 +154,7 @@ A command to jump to file for the current word.
 | **Config/routes.php** | &nbsp; |
 | array('controller' => 'books', 'action' => 'post') | app/Controller/BooksController.php : post() |
 | **Controller** | &nbsp; |
-| public $layout = 'default'; | app/View/Layouts/default.ctp |
-| $this->layout = 'default'; | app/View/Layouts/default.ctp |
+| public $layout = 'default'; or $this->layout = 'default'; | app/View/Layouts/default.ctp |
 | $this->render('index'); | app/View/Samples/index.ctp |
 | $this->redirect('/Samples/index'); | function index() |
 | **View** | &nbsp; |
@@ -181,6 +180,7 @@ A command to jump to file for the current word.
 | $Email->template('default'); | app/View/Emails/text/default.ctp |
 | 'datasource' => 'Database/Mysql' | lib/Cake/Model/Datasource/Database/Mysql.php |
 | $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
+| include APP . 'Config' . DS . 'routes.php'; | app/Config/routes.php |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
 
