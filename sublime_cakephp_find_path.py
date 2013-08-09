@@ -212,7 +212,7 @@ class Path:
 				self.folder_path['cake'] = 'cake/'
 				self.folder_path['cake_core_include_path'] = self.folder_path['root'][:-1]
 				self.folder_path['core_path'] = ''
-				self.folder_path['core_test_cases'] = self.folder_path['root'] + 'tests/cases/'
+				self.folder_path['core_test_cases'] = self.folder_path['root'] + 'cake/tests/cases/'
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'cases'
 		elif self.major_version == 2:
 			self.dir_path['config'] = "Config/"
@@ -302,8 +302,8 @@ class Path:
 				self.folder_path['cake'] = self.folder_path['root'] + 'lib/Cake/'
 				self.folder_path['cake_core_include_path'] = self.folder_path['root'] + 'lib'
 				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
-				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/Case'
-				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/Case'
+				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/TestCase'
+				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/TestCase'
 
 		list = [
 			'css',
