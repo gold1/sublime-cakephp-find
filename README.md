@@ -4,7 +4,7 @@ You can find out file and open easily.
 
 ## Requirements
 - Sublime Text 2.x
-- CakePHP ver.1.3.x or ver.2.x
+- CakePHP ver.1.3.x or ver.2.x or 3.0-dev(Update: 2013/08/10)
 
 ## Installation
 #### OSX
@@ -183,6 +183,7 @@ A command to jump to file for the current word.
 | include APP . 'Config' . DS . 'routes.php'; | app/Config/routes.php |
 | "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
+| use Cake\Utility\Time; | lib/Cake/Utility/Time.php |
 
 ## Run Test
 If you want to run test, we recommend you this plug-in.
