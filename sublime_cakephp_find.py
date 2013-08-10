@@ -179,6 +179,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_route() or
 			self.is_namespace_use() or
 			self.is_include_require() or
+			self.is_extend_implement() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
 			return True
@@ -442,6 +443,9 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 
 	def is_namespace_use(self):
 		class_name = Text().match_namespace_use(self.select_line_str)
+
+	def is_extend_implement(self):
+		class_name = Text().match_extend_implement(self.select_line_str, self.select_word)
 		if not class_name:
 			return False
 		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)

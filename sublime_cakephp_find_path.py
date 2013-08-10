@@ -674,7 +674,9 @@ class Path:
 				if os.path.exists(self.folder_path[class_type] + complete_name):
 					return self.folder_path[class_type] + complete_name
 
-		self.search_class_file_plugin_all(search_class_name, current_file_type)
+		file_path = self.search_class_file_plugin_all(search_class_name, current_file_type)
+		if file_path:
+			return file_path
 
 		if self.folder_path['core'] is not None:
 			file_path = self.search_core_file(file_name)
