@@ -614,6 +614,15 @@ class Text:
 			return 0, False
 		return up_dir_count, words
 
-
-
-
+	def match_namespace_use(self, text):
+		# use Cake\Network\Email\Email;
+		# use App\Model\Test01;
+		# use Cake\Database\Query as DatabaseQuery;
+		match = re.search("[ \t]*use[ \t]+([a-zA-Z0-9_\\\\]+)([ \t]+as[ \t]+([a-zA-Z0-9_]+))?;", text)
+		if match is None:
+			return False
+		path = match.group(1)
+		as_name = match.group(3)
+		class_name = path.split("\\")[-1]
+		return class_name
+	

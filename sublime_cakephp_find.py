@@ -177,6 +177,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_email_template() or
 			self.is_datasource() or
 			self.is_route() or
+			self.is_namespace_use() or
 			self.is_include_require() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
@@ -436,6 +437,16 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if not path_words:
 			return False
 		file_path = self.path.convert_include_require_word(self.view, up_dir_count, path_words)
+		self.path.switch_to_file(file_path, self.view)
+		return True
+
+	def is_namespace_use(self):
+		class_name = Text().match_namespace_use(self.select_line_str)
+		if not class_name:
+			return False
+		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)
+		if file_path == False:
+			return False
 		self.path.switch_to_file(file_path, self.view)
 		return True
 
