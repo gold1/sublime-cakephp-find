@@ -414,10 +414,12 @@ class Text:
 
 	def match_new_class(self, line_content):
 		# $my_class = new TestClass();
-		match = re.search("new ([a-zA-Z0-9_]+)[(;]", line_content)
+		# new Error\Exception(
+		match = re.search("new ([a-zA-Z0-9_\\\\]+)[(;]", line_content)
 		if match is None:
 			return False
-		return match.group(1)
+		class_name = match.group(1).split("\\")[-1]
+		return class_name
 
 	def match_app_import(self, line_content):
 		# App::import('Model', 'DebugKit.ToolbarAccess');
