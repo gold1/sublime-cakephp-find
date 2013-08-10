@@ -614,6 +614,25 @@ class Text:
 			return 0, False
 		return up_dir_count, words
 
+	def match_extend_implement(self, text, select_word):
+		# extends Controller {
+		# implements SessionHandlerInterface {
+		# implements SessionHandlerInterface, SessionHandlerInterface2 {
+		# extends Controller implements SessionHandlerInterface {
+		if select_word == "":
+			return False
+		extend = implements = False
+		match = re.search("extends[ \t]+([a-zA-Z0-9]+)[ \t\r\n\{]", text)
+		if match is not None:
+			if match.group(1) == select_word:
+				return select_word
+		match = re.search("implements[ \t]+([a-zA-Z0-9, \t]+)[ \t\r\n\{]", text)
+		if match is not None:
+			implements = re.sub("[ \t]+", "", match.group(1)).split(",")
+			for class_name in implements:
+				if class_name == select_word:
+					return select_word
+		return False
 
 
 
