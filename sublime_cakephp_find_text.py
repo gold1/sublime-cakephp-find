@@ -631,21 +631,33 @@ class Text:
 	def match_extend_implement(self, text, select_word):
 		# extends Controller {
 		# implements SessionHandlerInterface {
-		# implements SessionHandlerInterface, SessionHandlerInterface2 {
-		# extends Controller implements SessionHandlerInterface {
+		# class Exception extends \Cake\Error\Exception {
+		# class StatementDecorator implements StatementInterface, \Countable, \IteratorAggregate {
+		# class CustomTestEventListerner extends EventTestListener implements EventListener {
+		# class CustomTestEventListerner extends EventManagerTest implements EventListener {
 		if select_word == "":
 			return False
 		extend = implements = False
-		match = re.search("extends[ \t]+([a-zA-Z0-9]+)[ \t\r\n\{]", text)
+		match = re.search("extends[ \t]+([a-zA-Z0-9\\\\]+)[ \t\r\n\{]", text)
 		if match is not None:
-			if match.group(1) == select_word:
+			extend = match.group(1).split("\\")[-1]
+			if extend == select_word:
 				return select_word
 		match = re.search("implements[ \t]+([a-zA-Z0-9, \t]+)[ \t\r\n\{]", text)
 		if match is not None:
-			implements = re.sub("[ \t]+", "", match.group(1)).split(",")
+			implement_befores = re.sub("[ \t]+", "", match.group(1)).split(",")
+			implements = []
+			for class_name in implement_befores:
+				implements.append(class_name.split("\\")[-1])
 			for class_name in implements:
 				if class_name == select_word:
 					return select_word
+		# When a cursor is outside
+		if extend:
+			return extend
+		if implements:
+			return implements[0]
+
 		return False
 
 
