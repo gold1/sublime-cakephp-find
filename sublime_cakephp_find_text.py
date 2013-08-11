@@ -289,6 +289,12 @@ class Text:
 			return -1
 		return match.start(0)
 
+	def search_point_class_head(self, text):
+		match = re.search("(class|interface|trait)[ \t]+[a-zA-Z0-9]+[ \t\r\n]+", text)
+		if match is None:
+			return -1
+		return match.start(0)
+
 	def search_point_msgid(self, msg_id, text):
 		match = re.search("msgid[ \t]+\"" + msg_id + "\"", text)
 		if match is None:
@@ -657,5 +663,24 @@ class Text:
 				implements.append(class_name.split("\\")[-1])
 		return extend, implements
 
+	def match_use_trait(self, text):
+		# class Object {
+		#     use LogTrait, ViewVarsTrait;
+		#     use LogTrait;
+		#     use LogTrait
+		#     {
+		#     }
+		point = self.search_point_class_head(text)
+		if point == -1:
+			return False
+		content = text[point:]
+		matches = re.finditer("[; \t\r\n]+use[ \t]+([a-zA-Z0-9_, \t\r\n]+)[;{]", content)
+		traits = []
+		for match in matches:
+			find_traits = re.sub("[ \t\r\n]+", "", match.group(1)).split(",")
+			traits += find_traits
+		if len(traits) == 0:
+			return False
+		return traits
 
 

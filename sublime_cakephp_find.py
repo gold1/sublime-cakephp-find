@@ -17,7 +17,13 @@ elif sublime.version().startswith('2'):
 
 
 class FindParentThread(threading.Thread):
-	def __init__(self, parent, find_type, find_name, list = [], count = 0):
+	def __init__(self, parent, find_type, find_name, new_list = [], count = 0):
+		# delete duplicate
+		list = []
+		for name in new_list:
+			new_name = name.encode('utf-8')
+			if not new_name in list:
+				list.append(new_name)
 		self.parent = parent
 		self.find_type = find_type
 		self.find_name = find_name
@@ -28,9 +34,7 @@ class FindParentThread(threading.Thread):
 	def run(self):
 		# search list class
 		class_name = self.list.pop(0)
-		#print(class_name)
 		file_path = self.parent.path.search_class_file_all_dir(class_name)
-		#print(file_path)
 		if file_path == False:
 			return
 		# read class file
@@ -48,11 +52,13 @@ class FindParentThread(threading.Thread):
 			return
 		# search parent class
 		(extend, interfaces) = Text().match_extend_implement(file_content)
-		if not extend:
-			return
-		self.list.append(extend)
+		if extend:
+			self.list.append(extend)
+		traits = Text().match_use_trait(file_content)
+		if traits:
+			self.list += traits
 		# stop roop if bug
-		if self.count > 10:
+		if self.count > 100:
 			return
 		if len(self.list) == 0:
 			return
@@ -553,10 +559,15 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 				return True # True because user miss type
 		# this, self, parent
 		# search parent class
+		list = []
 		(extend, interfaces) = Text().match_extend_implement(Text().view_content(self.view))
-		if not extend:
+		if extend:
+			list.append(extend)
+		traits = Text().match_use_trait(Text().view_content(self.view))
+		if traits:
+			list += traits
+		if len(list) == 0:
 			return True
-		list = [extend]
 		thread = FindParentThread(self, self.select_sub_type, self.select_sub_name, list)
 		thread.start()
 		return True

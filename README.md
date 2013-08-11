@@ -167,23 +167,24 @@ A command to jump to file for the current word.
 | **Css** | &nbsp; |
 | background: #003d4c url('../img/cake.icon.png'); | open "app/webroot/img/cake.icon.png" |
 | **Anywhere** | &nbsp; |
-| self::$static_k | public static $static_k = 'k'; |
-| self::CONST_K | const CONST_K = 'K'; |
-| $this->index(); | function index() |
 | App::import('Lib', 'Libr'); | app/Lib/Libr.php |
 | App::uses('TimedBehavior', 'DebugKit.Model/Behavior'); | app/Plugin/DebugKit/Model/Behavior/TimedBehavior.php |
-| $time = new CakeTime(); // It continues below. | lib/Cake/Utility/CakeTime.php |
-| $time->listTimezones(); | lib/Cake/Utility/CakeTime.php : listTimezones |
-| CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones |
-| CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
+| use Cake\Utility\CakeTime; // namespace | lib/Cake/Utility/CakeTime.php |
+| require or include APP . 'Config' . DS . 'routes.php'; | app/Config/routes.php |
+| $this->privateFunc(); | function privateFunc() |
+| $this->log("message"); | lib/Cake/Core/Object.php : log() |
+| self::CONST_K | const CONST_K = 'K'; |
+| static::$static_k | public static $static_k = 'k'; |
 | $this->Auth->allow('*'); | lib/Cake/Controller/Component/AuthComponent.php : allow() |
+| CakeTime::timezone(); | lib/Cake/Utility/CakeTime.php : listTimezones() |
+| CakeTime::$wordFormat | lib/Cake/Utility/CakeTime.php : $wordFormat |
+| "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
+| $time = new CakeTime(); // It continues below. | lib/Cake/Utility/CakeTime.php |
+| $time->listTimezones(); | lib/Cake/Utility/CakeTime.php : listTimezones() |
 | $Email->template('default'); | app/View/Emails/text/default.ctp |
 | 'datasource' => 'Database/Mysql' | lib/Cake/Model/Datasource/Database/Mysql.php |
 | $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
-| include APP . 'Config' . DS . 'routes.php'; | app/Config/routes.php |
-| "Auth" | lib/Cake/Controller/Component/AuthComponent.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
-| use Cake\Utility\Time; | lib/Cake/Utility/Time.php |
 
 ## Run Test
 If you want to run test, we recommend you this plug-in.
