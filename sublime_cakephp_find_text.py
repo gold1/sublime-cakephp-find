@@ -104,7 +104,7 @@ class Text:
 				left_type = None
 
 		# set type
-		if word == "this" or word == "self" or word == "static":
+		if word == "this" or word == "self" or word == "static" or word == "parent":
 			type = "this"
 		elif right_type == "variable" or right_type == "function":
 			type = right_type
@@ -151,9 +151,11 @@ class Text:
 		select_sub_type = None
 		is_object_exists = False
 		is_after_this = False
+		this_type = False
 		for sel in self.sel_list:
 			if sel.type == "this":
 				is_after_this = True
+				this_type = sel.word
 				continue
 			elif sel.type == "string":
 				select_class_name = sel.word
@@ -171,7 +173,7 @@ class Text:
 					select_sub_name = sel.word
 					select_sub_type = sel.type
 				elif is_after_this:
-					select_class_name = "this"
+					select_class_name = this_type # "this" or "static" or "self"
 					select_sub_name = sel.word
 					select_sub_type = sel.type
 				break
@@ -240,30 +242,32 @@ class Text:
 
 	def move_point_controller_action(self, view, arg):
 		(action_name, ) = arg
-		point = self.search_point_function(Inflector().variablize(action_name), view)
+		point = self.search_point_function(Inflector().variablize(action_name), self.view_content(view))
 		if point == -1:
-			point = self.search_point_function(action_name, view)
+			point = self.search_point_function(action_name, self.view_content(view))
 			if point == -1:
 				return
 		self.move_view_point(view, point)
 
 	def move_point_function(self, view, arg):
 		(function_name, ) = arg
-		point = self.search_point_function(function_name, view)
+		point = self.search_point_function(function_name, self.view_content(view))
 		if point == -1:
-			return
+			return False
 		self.move_view_point(view, point)
+		return True
 
 	def move_point_variable(self, view, arg):
 		(variable_name, ) = arg
-		point = self.search_point_variable(variable_name, view)
+		point = self.search_point_variable(variable_name, self.view_content(view))
 		if point == -1:
-			return
+			return False
 		self.move_view_point(view, point)
+		return True
 
 	def move_point_msgid(self, view, arg):
 		(msg_id, ) = arg
-		point = self.search_point_msgid(msg_id, view)
+		point = self.search_point_msgid(msg_id, self.view_content(view))
 		if point == -1:
 			return
 		self.move_view_point(view, point)
@@ -273,20 +277,20 @@ class Text:
 		point = view.text_point(line_number, 0)
 		self.move_view_point(view, point)
 
-	def search_point_function(self, function_name, view):
-		match = re.search("function " + function_name + " *\(", self.view_content(view))
+	def search_point_function(self, function_name, text):
+		match = re.search("function " + function_name + " *\(", text)
 		if match is None:
 			return -1
 		return match.start(0)
 
-	def search_point_variable(self, variable_name, view):
-		match = re.search("(public|protected|private|var|const)[ \t]+(static[ \t]+)*\$?" + variable_name, self.view_content(view))
+	def search_point_variable(self, variable_name, text):
+		match = re.search("(public|protected|private|var|const)[ \t]+(static[ \t]+)*\$?" + variable_name, text)
 		if match is None:
 			return -1
 		return match.start(0)
 
-	def search_point_msgid(self, msg_id, view):
-		match = re.search("msgid[ \t]+\"" + msg_id + "\"", self.view_content(view))
+	def search_point_msgid(self, msg_id, text):
+		match = re.search("msgid[ \t]+\"" + msg_id + "\"", text)
 		if match is None:
 			return -1
 		return match.start(0)
@@ -628,37 +632,30 @@ class Text:
 		class_name = path.split("\\")[-1]
 		return class_name
 	
-	def match_extend_implement(self, text, select_word):
-		# extends Controller {
-		# implements SessionHandlerInterface {
+	def match_extend_implement(self, text):
+		# class AppController extends Controller {
+		# class SessionHandler implements SessionHandlerInterface {
 		# class Exception extends \Cake\Error\Exception {
-		# class StatementDecorator implements StatementInterface, \Countable, \IteratorAggregate {
 		# class CustomTestEventListerner extends EventTestListener implements EventListener {
 		# class CustomTestEventListerner extends EventManagerTest implements EventListener {
-		if select_word == "":
-			return False
+		# class StatementDecorator implements
+		#     StatementInterface,
+		#     \Countable,
+		#     \IteratorAggregate
+		# {
 		extend = implements = False
-		match = re.search("extends[ \t]+([a-zA-Z0-9\\\\]+)[ \t\r\n\{]", text)
-		if match is not None:
-			extend = match.group(1).split("\\")[-1]
-			if extend == select_word:
-				return select_word
-		match = re.search("implements[ \t]+([a-zA-Z0-9, \t]+)[ \t\r\n\{]", text)
-		if match is not None:
-			implement_befores = re.sub("[ \t]+", "", match.group(1)).split(",")
+		match = re.search("(class|interface|trait)[ \t]+[a-zA-Z0-9]+[ \t\r\n]+(extends[ \t\r\n]+([a-zA-Z0-9\\\\]+)[ \t\r\n]*)?(implements[ \t\r\n]+([a-zA-Z0-9, \t\r\n\\\\]+)[ \t\r\n]*)?[ \t\r\n\{]+", text)
+		if match is None:
+			return False, False
+		type = match.group(1) # class, interface, trait
+		if match.group(3) is not None:
+			extend = match.group(3).split("\\")[-1]
+		if match.group(5) is not None:
+			implement_befores = re.sub("[ \t]+", "", match.group(5)).split(",")
 			implements = []
 			for class_name in implement_befores:
 				implements.append(class_name.split("\\")[-1])
-			for class_name in implements:
-				if class_name == select_word:
-					return select_word
-		# When a cursor is outside
-		if extend:
-			return extend
-		if implements:
-			return implements[0]
-
-		return False
+		return extend, implements
 
 
 

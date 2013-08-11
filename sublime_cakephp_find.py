@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sublime, sublime_plugin
+import threading
+import functools
 
 if sublime.version().startswith('3'):
 	from .sublime_cakephp_find_path import Path
@@ -12,6 +14,52 @@ elif sublime.version().startswith('2'):
 	from sublime_cakephp_find_text import Text
 	from sublime_cakephp_find_inflector import Inflector
 	#from dump import Dump
+
+
+class FindParentThread(threading.Thread):
+	def __init__(self, parent, find_type, find_name, list = [], count = 0):
+		self.parent = parent
+		self.find_type = find_type
+		self.find_name = find_name
+		self.list = list
+		self.count = count + 1
+		threading.Thread.__init__(self)
+
+	def run(self):
+		# search list class
+		class_name = self.list.pop(0)
+		#print(class_name)
+		file_path = self.parent.path.search_class_file_all_dir(class_name)
+		#print(file_path)
+		if file_path == False:
+			return
+		# read class file
+		f = open(file_path)
+		file_content = f.read()
+		f.close()
+		# search method or variable
+		if self.find_type == "function":
+			move_point = Text().search_point_function(self.find_name, file_content)
+		elif self.find_type == "variable":
+			move_point = Text().search_point_variable(self.find_name, file_content)
+		if move_point != -1:
+			sublime.set_timeout(functools.partial(self.parent.find_parent_open_file,
+								file_path), 0)
+			return
+		# search parent class
+		(extend, interfaces) = Text().match_extend_implement(file_content)
+		if not extend:
+			return
+		self.list.append(extend)
+		# stop roop if bug
+		if self.count > 10:
+			return
+		if len(self.list) == 0:
+			return
+		# call next
+		sublime.set_timeout(functools.partial(self.parent.find_parent_call_next,
+							self.list,
+							self.count), 0)
 
 
 class SublimeCakephpFind(sublime_plugin.TextCommand):
@@ -340,8 +388,11 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 	def is_class_operator(self):
 		if self.select_class_name is None:
 			return False
-		if self.select_class_name == "this":
-			file_path = self.view.file_name()
+		if (self.select_class_name == "this" or
+			self.select_class_name == "static" or
+			self.select_class_name == "self" or
+			self.select_class_name == "parent"):
+			return self.find_type_this()
 		else:
 			file_path = self.path.search_class_file_all_dir(self.select_class_name, self.current_file_type)
 		if file_path == False:
@@ -452,7 +503,21 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		return True
 
 	def is_extend_implement(self):
-		class_name = Text().match_extend_implement(self.select_line_str, self.select_word)
+		(extend, interfaces) = Text().match_extend_implement(self.select_line_str)
+		class_name = False
+		if extend:
+			if extend == self.select_word:
+				class_name = extend
+		if interfaces:
+			for interface in interfaces:
+				if interface == self.select_word:
+					class_name = interface
+		# When a cursor is outside
+		if not class_name:
+			if extend:
+				class_name = extend
+			elif interfaces:
+				class_name = interfaces[0]
 		if not class_name:
 			return False
 		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)
@@ -471,6 +536,41 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.view.window().run_command("hide_panel")
 		if len(self.view.sel()) > 1:
 			self.view.sel().subtract(region)
+
+	def find_type_this(self):
+		if self.select_sub_type is None:
+			return False
+		if (self.select_class_name == "this" or
+			self.select_class_name == "static" or
+			self.select_class_name == "self"):
+			if self.select_sub_type == "function":
+				move_flag = Text().move_point_function(self.view, [self.select_sub_name])
+			elif self.select_sub_type == "variable":
+				move_flag = Text().move_point_variable(self.view, [self.select_sub_name])
+			if move_flag:
+				return True
+			if self.select_class_name == "static":
+				return True # True because user miss type
+		# this, self, parent
+		# search parent class
+		(extend, interfaces) = Text().match_extend_implement(Text().view_content(self.view))
+		if not extend:
+			return True
+		list = [extend]
+		thread = FindParentThread(self, self.select_sub_type, self.select_sub_name, list)
+		thread.start()
+		return True
+
+	def find_parent_call_next(self, list = [], count = 0):
+		thread = FindParentThread(self, self.select_sub_type, self.select_sub_name, list, count)
+		thread.start()
+
+	def find_parent_open_file(self, file_path):
+		if self.select_sub_type == "function":
+			self.path.set_open_file_callback(Text().move_point_function, self.select_sub_name)
+		elif self.select_sub_type == "variable":
+			self.path.set_open_file_callback(Text().move_point_variable, self.select_sub_name)
+		self.path.switch_to_file(file_path, self.view)
 
 
 class CakeFindCommand(SublimeCakephpFind):
