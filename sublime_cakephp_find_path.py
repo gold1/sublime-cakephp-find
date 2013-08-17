@@ -1281,6 +1281,8 @@ class Path:
 					self.dir_path["fixture"] + file_name)
 		elif type == "core":
 			file_path = self.folder_path["core_fixture"] + file_name
+		else:
+			return False
 		
 		if os.path.exists(file_path):
 			return self.switch_to_file(file_path, view)
