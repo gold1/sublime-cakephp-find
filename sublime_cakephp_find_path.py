@@ -337,18 +337,19 @@ class Path:
 		]
 		for category in list:
 			self.folder_path[category] = self.folder_path['app'] + self.dir_path[category]
-		list = [
-			'core_controller',
-			'core_model',
-			'core_datasource',
-			'core_view',
-			'core_component',
-			'core_behavior',
-			'core_helper',
-			'core_lib',
-		]
-		for category in list:
-			self.folder_path[category] = self.folder_path['core'] + self.dir_path[category]
+		if self.folder_path['core'] is not None:
+			list = [
+				'core_controller',
+				'core_model',
+				'core_datasource',
+				'core_view',
+				'core_component',
+				'core_behavior',
+				'core_helper',
+				'core_lib',
+			]
+			for category in list:
+				self.folder_path[category] = self.folder_path['core'] + self.dir_path[category]
 
 	def get_this_dir(self, view):
 		return os.path.dirname(self.convert_file_path(view)) + "/"
