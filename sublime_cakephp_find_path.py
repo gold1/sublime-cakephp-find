@@ -104,7 +104,7 @@ class Path:
 	def find_app(self, view):
 		dirname = os.path.dirname(self.convert_file_path(view))
 		count = 0
-		count_limit = 7
+		count_limit = 10
 		while count < count_limit:
 			if (os.path.exists(dirname + "/config/core.php") or
 				os.path.exists(dirname + "/Config/core.php") or
@@ -123,13 +123,16 @@ class Path:
 				self.folder_path['core_top'] = self.folder_path['root'] + "cake/"
 			elif os.path.exists(self.folder_path['root'] + "lib/Cake/VERSION.txt"):
 				self.folder_path['core_top'] = self.folder_path['root'] + "lib/Cake/"
+			# composer install >= Version 2.1
+			elif os.path.exists(self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/VERSION.txt"):
+				self.folder_path['core_top'] = self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/"
 			if self.folder_path['core_top'] is not None:
 				self.get_major_version_from_file()
 			# find path by setting option
 		else:
 			dirname = os.path.dirname(self.convert_file_path(view))
 			count = 0
-			count_limit = 7
+			count_limit = 10
 			while count < count_limit:
 				if os.path.exists(dirname + "/VERSION.txt"):
 					self.folder_path['core_top'] = dirname + "/"
