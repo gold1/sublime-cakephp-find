@@ -84,26 +84,24 @@ class Path:
 	def set_app(self, view):
 		self.dir_path = {}
 		self.folder_path = {}
+		self.folder_path['core_top'] = None
 		self.folder_path['core'] = None
-		self.folder_path['core_list_root'] = None
 		self.view_extension = 'ctp'
+		self.major_version = None
 		self.app_dir_name = None
 		self.open_file_view = None
 		self.open_file_callback = None
 		self.open_file_callback_arg = None
-		(self.folder_path['root'], self.folder_path['app']) = self.find_root(view)
-		if self.folder_path['root'] == False:
+		self.folder_path['app'] = None
+		self.folder_path['root'] = None
+		self.find_app(view)
+		self.find_core_top(view)
+		if self.major_version is None:
 			return False
-		if self.folder_path['app']:
-			app_dir_name = self.folder_path['app'].replace(self.folder_path['root'], "")
-			self.app_dir_name = app_dir_name.replace("/", "")
-		if not self.set_major_version():
-			return False
-		self.set_core_list_root()
 		self.set_folder_path()
 		return True
 
-	def find_root(self, view):
+	def find_app(self, view):
 		dirname = os.path.dirname(self.convert_file_path(view))
 		count = 0
 		count_limit = 7
@@ -111,20 +109,60 @@ class Path:
 			if (os.path.exists(dirname + "/config/core.php") or
 				os.path.exists(dirname + "/Config/core.php") or
 				os.path.exists(dirname + "/Config/app.php")):
-				return os.path.dirname(dirname) + "/", dirname + "/"
-			# core file
-			elif (os.path.exists(dirname + "/app/config/core.php") or
-				os.path.exists(dirname + "/app/Config/core.php") or
-				os.path.exists(dirname + "/App/Config/app.php")):
-				if os.path.exists(dirname + "/app"):
-					app_name = "app"
-				else:
-					app_name = "App"
-				return dirname + "/", dirname + "/" + app_name + "/"
+				self.app_dir_name = dirname.split("/")[-1]
+				self.folder_path['app'] = dirname + "/"
+				self.folder_path['root'] = os.path.dirname(dirname) + "/"
+				return
 			count += 1
 			dirname = os.path.dirname(dirname)
-		sublime.status_message("Can't find app path.")
-		return False, False
+
+	def find_core_top(self, view):
+		if self.folder_path['app'] is not None:
+			# find relative
+			if os.path.exists(self.folder_path['root'] + "cake/VERSION.txt"):
+				self.folder_path['core_top'] = self.folder_path['root'] + "cake/"
+			elif os.path.exists(self.folder_path['root'] + "lib/Cake/VERSION.txt"):
+				self.folder_path['core_top'] = self.folder_path['root'] + "lib/Cake/"
+			if self.folder_path['core_top'] is not None:
+				self.get_major_version_from_file()
+			# find path by setting option
+		else:
+			dirname = os.path.dirname(self.convert_file_path(view))
+			count = 0
+			count_limit = 7
+			while count < count_limit:
+				if os.path.exists(dirname + "/VERSION.txt"):
+					self.folder_path['core_top'] = dirname + "/"
+					self.get_major_version_from_file()
+					break
+				count += 1
+				dirname = os.path.dirname(dirname)
+			# find app path
+			if self.folder_path['core_top'] is not None:
+				count = 0
+				app_list = [
+					"/app/config/core.php",
+					"/app/Config/core.php",
+					"/App/Config/app.php",
+				]
+				while count < count_limit:
+					for app_path in app_list:
+						if (os.path.exists(dirname + app_path)):
+							self.folder_path['app'] = os.path.dirname(os.path.dirname(dirname + app_path)) + "/"
+							self.app_dir_name = self.folder_path['app'].split("/")[-2]
+							self.folder_path['root'] = os.path.dirname(self.folder_path['app'][0:-1]) + "/"
+							count += count_limit
+							break
+					count += 1
+					dirname = os.path.dirname(dirname)
+		# find version, root
+		if self.major_version is None and self.folder_path['app'] is not None:
+			self.get_major_version_from_path();
+		if self.folder_path['root'] is None and self.folder_path['core_top'] is not None:
+			if os.path.dirname(self.folder_path['core_top'][0:-1]).split("/")[-1] == 'lib':
+				self.folder_path['root'] = os.path.dirname(os.path.dirname(self.folder_path['core_top'][0:-1])) + "/"
+			elif self.folder_path['core_top'][0:-1].split("/")[-1] == 'cake':
+				self.folder_path['root'] = os.path.dirname(self.folder_path['core_top'][0:-1]) + "/"
 
 	def convert_file_path(self, view):
 		file_path = view.file_name()
@@ -132,35 +170,21 @@ class Path:
 			file_path = file_path.replace("\\", "/")
 		return file_path
 
-	def set_major_version(self):
-		self.major_version = self.get_major_version_from_file()
-		if self.major_version is not None:
-			self.folder_path['core'] = True
-		else:
-			self.major_version = self.get_major_version_from_path()
-		if self.major_version is None:
-			sublime.status_message("Can't find CakePHP version file.")
-			return False
-		return True
-
 	def get_major_version_from_file(self):
-		list = ["cake/VERSION.txt", "lib/Cake/VERSION.txt"]
-		for path in list:
-			if os.path.exists(self.folder_path['root'] + path):
-				for line in open(self.folder_path['root'] + path, "r"):
-					match = re.search("([1-9])\.([0-9])\.([0-9])+", line)
-					if match is not None:
-						return int(match.group(1))
-		return None
+		path = self.folder_path['core_top'] + "VERSION.txt"
+		if os.path.exists(path):
+			for line in open(path, "r"):
+				match = re.search("([1-9])\.([0-9])\.([0-9])+", line)
+				if match is not None:
+					self.major_version = int(match.group(1))
 
 	def get_major_version_from_path(self):
 		if os.path.exists(self.folder_path['app'] + "controllers"):
-			return 1
+			self.major_version = 1
 		elif os.path.exists(self.folder_path['app'] + "Controller"):
-			return 2
+			self.major_version = 2
 		elif os.path.exists(self.folder_path['app'] + "Config/app.php"):
-			return 3
-		return None
+			self.major_version = 3
 
 	def set_folder_path(self):
 		self.dir_path['css'] = "webroot/css/"
@@ -195,10 +219,10 @@ class Path:
 			self.dir_path['component_test'] = "components/"
 			self.dir_path['behavior_test'] = "behaviors/"
 			self.dir_path['helper_test'] = "helpers/"
-			if self.folder_path['core'] is not None:
-				self.folder_path['core'] = self.folder_path['root'] + "cake/libs/"
-				self.folder_path['core_test'] = self.folder_path['root'] + "cake/tests/cases/libs/"
-				self.folder_path['core_fixture'] = self.folder_path['root'] + "cake/tests/fixtures/"
+			if self.folder_path['core_top'] is not None:
+				self.folder_path['core'] = self.folder_path['core_top'] + "libs/"
+				self.folder_path['core_test'] = self.folder_path['core_top'] + "tests/cases/libs/"
+				self.folder_path['core_fixture'] = self.folder_path['core_top'] + "tests/fixtures/"
 				self.dir_path['core_test_relative'] = "tests/cases/libs/"
 				self.dir_path['core_controller'] = "controller/"
 				self.dir_path['core_model'] = "model/"
@@ -210,9 +234,10 @@ class Path:
 				self.dir_path['core_lib'] = ""
 				# cake define path
 				self.folder_path['cake'] = 'cake/'
-				self.folder_path['cake_core_include_path'] = self.folder_path['root'][:-1]
+				self.folder_path['cake_core_include_path'] = os.path.dirname(self.folder_path['core_top'][:-1])[:-1]
 				self.folder_path['core_path'] = ''
-				self.folder_path['core_test_cases'] = self.folder_path['root'] + 'cake/tests/cases/'
+				self.folder_path['core_test_cases'] = self.folder_path['core_top'] + 'tests/cases/'
+			if self.folder_path['app'] is not None:
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'cases'
 		elif self.major_version == 2:
 			self.dir_path['config'] = "Config/"
@@ -240,10 +265,10 @@ class Path:
 			self.dir_path['component_test'] = "Controller/Component/"
 			self.dir_path['behavior_test'] = "Model/Behavior/"
 			self.dir_path['helper_test'] = "View/Helper/"
-			if self.folder_path['core'] is not None:
-				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
-				self.folder_path['core_test'] = self.folder_path['root'] + "lib/Cake/Test/Case/"
-				self.folder_path['core_fixture'] = self.folder_path['root'] + "lib/Cake/Test/Fixture/"
+			if self.folder_path['core_top'] is not None:
+				self.folder_path['core'] = self.folder_path['core_top']
+				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/Case/"
+				self.folder_path['core_fixture'] = self.folder_path['core_top'] + "Test/Fixture/"
 				self.dir_path['core_test_relative'] = self.dir_path['test']
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
@@ -254,10 +279,11 @@ class Path:
 				self.dir_path['core_helper'] = "View/Helper/"
 				self.dir_path['core_lib'] = "Utility/"
 				# cake define path
-				self.folder_path['cake'] = self.folder_path['root'] + 'lib/Cake/'
-				self.folder_path['cake_core_include_path'] = self.folder_path['root'] + 'lib'
-				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
+				self.folder_path['cake'] = self.folder_path['core_top']
+				self.folder_path['cake_core_include_path'] = os.path.dirname(self.folder_path['core_top'][0:-1])
+				self.folder_path['core_path'] = self.folder_path['cake_core_include_path'] + '/'
 				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/Case'
+			if self.folder_path['app'] is not None:
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/Case'
 		elif self.major_version == 3:
 			self.dir_path['config'] = "Config/"
@@ -285,10 +311,10 @@ class Path:
 			self.dir_path['component_test'] = "Controller/Component/"
 			self.dir_path['behavior_test'] = "Model/Behavior/"
 			self.dir_path['helper_test'] = "View/Helper/"
-			if self.folder_path['core'] is not None:
-				self.folder_path['core'] = self.folder_path['root'] + "lib/Cake/"
-				self.folder_path['core_test'] = self.folder_path['root'] + "lib/Cake/Test/TestCase/"
-				self.folder_path['core_fixture'] = self.folder_path['root'] + "lib/Cake/Test/Fixture/"
+			if self.folder_path['core_top'] is not None:
+				self.folder_path['core'] = self.folder_path['core_top']
+				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/Case/"
+				self.folder_path['core_fixture'] = self.folder_path['core_top'] + "Test/Fixture/"
 				self.dir_path['core_test_relative'] = self.dir_path['test']
 				self.dir_path['core_controller'] = "Controller/"
 				self.dir_path['core_model'] = "Model/"
@@ -299,10 +325,11 @@ class Path:
 				self.dir_path['core_helper'] = "View/Helper/"
 				self.dir_path['core_lib'] = "Utility/"
 				# cake define path
-				self.folder_path['cake'] = self.folder_path['root'] + 'lib/Cake/'
-				self.folder_path['cake_core_include_path'] = self.folder_path['root'] + 'lib'
-				self.folder_path['core_path'] = self.folder_path['root'] + 'lib/'
+				self.folder_path['cake'] = self.folder_path['core_top']
+				self.folder_path['cake_core_include_path'] = os.path.dirname(self.folder_path['core_top'][0:-1])
+				self.folder_path['core_path'] = self.folder_path['cake_core_include_path'] + '/'
 				self.folder_path['core_test_cases'] = self.folder_path['cake'] + 'Test/TestCase'
+			if self.folder_path['app'] is not None:
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/TestCase'
 
 		list = [
@@ -335,9 +362,11 @@ class Path:
 			'fixture',
 			'locale',
 		]
-		for category in list:
-			self.folder_path[category] = self.folder_path['app'] + self.dir_path[category]
-		if self.folder_path['core'] is not None:
+
+		if self.folder_path['app'] is not None:
+			for category in list:
+				self.folder_path[category] = self.folder_path['app'] + self.dir_path[category]
+		if self.folder_path['core_top'] is not None:
 			list = [
 				'core_controller',
 				'core_model',
@@ -362,6 +391,8 @@ class Path:
 			return match
 
 	def match_controller_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		if self.major_version == 1:
 			regexp = self.folder_path['app'] + "controllers/([a-zA-Z0-9_]+)_controller\.php$"
 		elif (self.major_version == 2 or
@@ -373,6 +404,8 @@ class Path:
 		return match.group(1)
 
 	def match_model_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		regexp = self.folder_path['model'] + "([^/]+)\.php"
 		match = self.match(regexp, self.convert_file_path(view))
 		if (match == False or
@@ -381,12 +414,14 @@ class Path:
 		return match.group(1)
 
 	def match_view_file(self, view):
+		if self.folder_path['app'] is None:
+			return None, None, False
 		regexp = self.folder_path['view'] + "(([^/]+/)+)([^/.]+)\.([a-z]+)$"
 		match = self.match(regexp, self.convert_file_path(view))
 		if (match == False or
 			self.match_helper_file(view) != False or
 			self.match_layout_file(view) != False):
-			return False, False, False
+			return None, None, False
 		# check controller name
 		controller_path = match.group(1)
 		controller_path = controller_path[:len(controller_path)-1]
@@ -401,9 +436,11 @@ class Path:
 			for contoller_file in controller_list:
 				if contoller_file == complete_name:
 					return dir_name, match.group(3), match.group(4)
-		return False, False, False
+		return None, None, False
 
 	def match_component_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		if self.major_version == 1:
 			regexp = (self.folder_path['component'] + "([a-zA-Z0-9_]+)\.php$")
 		elif (self.major_version == 2 or
@@ -415,6 +452,8 @@ class Path:
 		return match.group(1)
 
 	def match_behavior_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		if self.major_version == 1:
 			regexp = (self.folder_path['behavior'] + "([a-zA-Z0-9_]+)\.php$")
 		elif (self.major_version == 2 or
@@ -426,6 +465,8 @@ class Path:
 		return match.group(1)
 
 	def match_helper_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		if self.major_version == 1:
 			regexp = (self.folder_path['helper'] + "([a-zA-Z0-9_]+)\.php$")
 		elif (self.major_version == 2 or
@@ -437,6 +478,8 @@ class Path:
 		return match.group(1)
 
 	def match_layout_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		regexp = (self.folder_path['layout'] + "/([^/.]+)\.([a-z]+)$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -444,6 +487,8 @@ class Path:
 		return match.group(1)
 
 	def match_css_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		regexp = self.folder_path['css'] + "(.+)\.css$"
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -451,6 +496,8 @@ class Path:
 		return match.group(1)
 
 	def match_plugin_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		regexp = (self.folder_path['plugin'] + "(.+/)*([a-zA-Z0-9_]+)\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -461,15 +508,17 @@ class Path:
 		return True
 
 	def match_core_list_file(self, view):
-		if self.folder_path['core_list_root'] is None:
+		if self.folder_path['core_top'] is None:
 			return False
-		regexp = (self.folder_path['core_list_root'] + "(.+/)*([a-zA-Z0-9_\.]+)\.php$")
+		regexp = (self.folder_path['core_top'] + "(.+/)*([a-zA-Z0-9_\.]+)\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
 		return match.group(1)
 
 	def match_app_file(self, view):
+		if self.folder_path['app'] is None:
+			return False
 		regexp = (self.folder_path['app'] + "(.+/)*([a-zA-Z0-9_\-\.]+)$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
@@ -534,8 +583,13 @@ class Path:
 		self.open_file_callback = callback
 		self.open_file_callback_arg = arg
 
+	def show_dir_list_by_folder(self, dirname, view):
+		if self.folder_path['app'] is not None:
+			self.show_dir_list(self.path.folder_path[dirname], view)
+
 	def show_dir_list(self, dir_path, view):
 		if not dir_path: return
+		if self.folder_path['app'] is None: return
 
 		self.show_list_view = view
 		if not dir_path.endswith("/"):
@@ -648,38 +702,38 @@ class Path:
 		elif (self.major_version == 2 or
 			self.major_version == 3):
 			file_name = search_class_name
-		# check direct
-		direct_dir_list = ["component", "model", "behavior", "helper", "controller", "datasource", "authenticate", "acl"]
-		for dir_name in direct_dir_list:
-			if os.path.exists(self.folder_path[dir_name] + file_name + ".php"):
-				return self.folder_path[dir_name] + file_name + ".php"
-		# search recursive
-		recursive_dir_list = ["lib", "vendor"]
-		for dir_name in recursive_dir_list:
-			file_path = self.search_file_recursive(file_name + ".php", self.folder_path[dir_name])
+
+		if self.folder_path['app'] is not None:
+			# check direct
+			direct_dir_list = ["component", "model", "behavior", "helper", "controller", "datasource", "authenticate", "acl"]
+			for dir_name in direct_dir_list:
+				if os.path.exists(self.folder_path[dir_name] + file_name + ".php"):
+					return self.folder_path[dir_name] + file_name + ".php"
+			# search recursive
+			recursive_dir_list = ["lib", "vendor"]
+			for dir_name in recursive_dir_list:
+				file_path = self.search_file_recursive(file_name + ".php", self.folder_path[dir_name])
+				if file_path:
+					return file_path
+			add_dir_list = self.get_search_add_dir_list(current_file_type)
+			# check direct
+			if (self.major_version == 2 or
+				self.major_version == 3):
+				# Find "Comment" ->
+				# Ver.1 : comment.php
+				# Ver.2 : CommentComponent.php
+				new_class_name = search_class_name
+				if current_file_type == 'view' or current_file_type == 'helper':
+					new_class_name = self.modify_helper_class_name(new_class_name)
+				for class_type in add_dir_list:
+					complete_name = self.complete_file_name(class_type, new_class_name)
+					if os.path.exists(self.folder_path[class_type] + complete_name):
+						return self.folder_path[class_type] + complete_name
+			file_path = self.search_class_file_plugin_all(search_class_name, current_file_type)
 			if file_path:
 				return file_path
 
-		add_dir_list = self.get_search_add_dir_list(current_file_type)
-		# check direct
-		if (self.major_version == 2 or
-			self.major_version == 3):
-			# Find "Comment" ->
-			# Ver.1 : comment.php
-			# Ver.2 : CommentComponent.php
-			new_class_name = search_class_name
-			if current_file_type == 'view' or current_file_type == 'helper':
-				new_class_name = self.modify_helper_class_name(new_class_name)
-			for class_type in add_dir_list:
-				complete_name = self.complete_file_name(class_type, new_class_name)
-				if os.path.exists(self.folder_path[class_type] + complete_name):
-					return self.folder_path[class_type] + complete_name
-
-		file_path = self.search_class_file_plugin_all(search_class_name, current_file_type)
-		if file_path:
-			return file_path
-
-		if self.folder_path['core'] is not None:
+		if self.folder_path['core_top'] is not None:
 			file_path = self.search_core_file(file_name)
 			if file_path:
 				return file_path
@@ -711,7 +765,7 @@ class Path:
 			file_name = class_list[search_file_name][0]['f']
 			if file_name == "":
 				file_name = search_file_name + ".php"
-			return self.folder_path['core_list_root'] + path + file_name
+			return self.folder_path['core_top'] + path + file_name
 		return False
 
 	def get_search_add_dir_list(self, current_file_type = None):
@@ -893,15 +947,6 @@ class Path:
 			return new_file_path + '.php'
 		return None
 
-	def set_core_list_root(self):
-		if self.folder_path['core'] is None:
-			return
-		if self.major_version == 1:
-			self.folder_path['core_list_root'] = self.folder_path['root'] + 'cake/'
-		elif (self.major_version == 2 or
-			self.major_version == 3):
-			self.folder_path['core_list_root'] = self.folder_path['root'] + 'lib/'
-
 	def set_view_extension(self, ext):
 		self.view_extension = ext
 
@@ -960,13 +1005,14 @@ class Path:
 		self.switch_to_file(self.folder_path['css'] + selected, self.show_list_view)
 
 	def get_category_path(self, category, plugin_name = False, options = {}):
-		if 'core' in options:
+		if 'core_top' in options:
 			if not 'core_' + category in self.dir_path: return False
 			return self.folder_path['core_' + category]
 		if 'test' in options:
 			if not category + '_test' in self.dir_path: return False
 			return self.folder_path[category + '_test']
 
+		if self.folder_path['app'] is None: return False
 		if not category in self.dir_path: return False
 		if plugin_name:
 			if self.major_version == 1:
@@ -1308,34 +1354,42 @@ class Path:
 	
 	def convert_include_require_word(self, view, up_dir_count, path_words):
 		cake_constants = {
-			'APP': self.folder_path['app'],
-			'APPLIBS': self.folder_path['lib'],
-			'APP_TEST_CASES': self.folder_path['app_test_cases'],
-			'APP_DIR': 'app',
-			'CACHE': self.folder_path['cache'],
-			'CAKE': self.folder_path['cake'],
-			'CAKE_CORE_INCLUDE_PATH': self.folder_path['cake_core_include_path'],
 			'CAKE_TESTS_LIB': 'cake/tests/lib/', # version 1 only
-			'CONFIGS': self.folder_path['config'], # version 1 only
 			'CONSOLE_LIBS': 'cake/console/libs/', # version 1 only
-			'CORE_PATH': self.folder_path['core_path'],
-			'CORE_TEST_CASES': self.folder_path['core_test_cases'],
-			'CSS': self.folder_path['css'],
 			'CSS_URL': 'css/',
-			'IMAGES': self.folder_path['image'],
 			'IMAGES_URL': 'img/',
-			'JS': self.folder_path['javascript'],
 			'JS_URL': 'js/',
 			'LIBS': 'cake/libs/', # version 1 only
-			'ROOT': self.folder_path['root'],
-			'TESTS': self.folder_path['test'],
-			'TMP': self.folder_path['tmp'],
-			'VENDORS': self.folder_path['vendor'],
 			'WEBROOT_DIR': 'webroot',
-			'WWW_ROOT': self.folder_path['app'] + 'webroot/',
 			'DIRECTORY_SEPARATOR': '/',
 			'DS': '/',
 		}
+		if self.folder_path['app'] is not None:
+			app_constants = {
+				'APP': self.folder_path['app'],
+				'APPLIBS': self.folder_path['lib'],
+				'APP_TEST_CASES': self.folder_path['app_test_cases'],
+				'APP_DIR': self.app_dir_name,
+				'CACHE': self.folder_path['cache'],
+				'CONFIGS': self.folder_path['config'], # version 1 only
+				'CSS': self.folder_path['css'],
+				'IMAGES': self.folder_path['image'],
+				'JS': self.folder_path['javascript'],
+				'ROOT': self.folder_path['root'],
+				'TESTS': self.folder_path['test'],
+				'TMP': self.folder_path['tmp'],
+				'VENDORS': self.folder_path['vendor'],
+				'WWW_ROOT': self.folder_path['app'] + 'webroot/',
+			}
+			cake_constants.update(app_constants)
+		if self.folder_path['core_top'] is not None:
+			core_constants = {
+				'CAKE': self.folder_path['cake'],
+				'CAKE_CORE_INCLUDE_PATH': self.folder_path['cake_core_include_path'],
+				'CORE_PATH': self.folder_path['core_path'],
+				'CORE_TEST_CASES': self.folder_path['core_test_cases'],
+			}
+			cake_constants.update(core_constants)
 		path = ''
 		if up_dir_count > 0:
 			path = self.convert_file_path(view)

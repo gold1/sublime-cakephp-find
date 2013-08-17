@@ -73,6 +73,8 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.path = Path()
 		self.current_file_type = None
 		self.action_name = None
+		self.plural_name = None
+		self.singular_name = None
 		self.lower_camelized_action_name = None
 		self.select_word = None
 		self.select_class_name = None
@@ -131,7 +133,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 	# Theme view is not supported.
 	def is_view_file(self):
 		(self.plural_name, self.action_name, view_extension) = self.path.match_view_file(self.view)
-		if not self.plural_name:
+		if self.plural_name is None:
 			return False
 		self.path.set_view_extension(view_extension)
 		self.lower_camelized_action_name = Inflector().variablize(self.action_name)
@@ -615,7 +617,7 @@ class CakeFindCommand(SublimeCakephpFind):
 class CakeGrepCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():
-			return False
+			return
 		where = self.path.get_grep_where(self.view, self.user_settings)
 		self.view.window().run_command("show_panel", {"panel": "find_in_files", "where": where})
 
@@ -623,7 +625,7 @@ class CakeSwitchToModelCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():
 			return
-		if not self.is_file():
+		if not self.is_file() or self.singular_name is None:
 			sublime.status_message("Can't switch to model.")
 			return
 		self.path.switch_to_category(self.view, 'model', self.singular_name)
@@ -632,7 +634,7 @@ class CakeSwitchToControllerCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():
 			return
-		if not self.is_file():
+		if not self.is_file() or self.plural_name is None:
 			sublime.status_message("Can't switch to contoroller.")
 			return
 		if self.action_name is not None:
@@ -643,7 +645,7 @@ class CakeSwitchToViewCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path():
 			return
-		if not self.is_file() or self.action_name is None:
+		if not self.is_file() or self.action_name is None or self.plural_name is None:
 			sublime.status_message("Can't switch to view.")
 			return
 		return self.path.switch_to_view(self.view, self.plural_name, self.action_name)
@@ -668,82 +670,82 @@ class CakeShowDirectoryListCommand(SublimeCakephpFind):
 class CakeShowControllerListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["controller"], self.view)
+		self.path.show_dir_list_by_folder("controller", self.view)
 
 class CakeShowModelListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["model"], self.view)
+		self.path.show_dir_list_by_folder("model", self.view)
 
 class CakeShowViewListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["view"], self.view)
+		self.path.show_dir_list_by_folder("view", self.view)
 
 class CakeShowComponentListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["component"], self.view)
+		self.path.show_dir_list_by_folder("component", self.view)
 
 class CakeShowBehaviorListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["behavior"], self.view)
+		self.path.show_dir_list_by_folder("behavior", self.view)
 
 class CakeShowHelperListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["helper"], self.view)
+		self.path.show_dir_list_by_folder("helper", self.view)
 
 class CakeShowLibListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["lib"], self.view)
+		self.path.show_dir_list_by_folder("lib", self.view)
 
 class CakeShowVendorListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["vendor"], self.view)
+		self.path.show_dir_list_by_folder("vendor", self.view)
 
 class CakeShowLayoutListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["layout"], self.view)
+		self.path.show_dir_list_by_folder("layout", self.view)
 
 class CakeShowCssListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["css"], self.view)
+		self.path.show_dir_list_by_folder("css", self.view)
 
 class CakeShowJavascriptListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["javascript"], self.view)
+		self.path.show_dir_list_by_folder("javascript", self.view)
 
 class CakeShowElementListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["element"], self.view)
+		self.path.show_dir_list_by_folder("element", self.view)
 
 class CakeShowConfigListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["config"], self.view)
+		self.path.show_dir_list_by_folder("config", self.view)
 
 class CakeShowPluginListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["plugin"], self.view)
+		self.path.show_dir_list_by_folder("plugin", self.view)
 
 class CakeShowTestListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["test"], self.view)
+		self.path.show_dir_list_by_folder("test", self.view)
 
 class CakeShowFixtureListCommand(SublimeCakephpFind):
 	def run(self, edit):
 		if not self.set_app_path(): return
-		self.path.show_dir_list(self.path.folder_path["fixture"], self.view)
+		self.path.show_dir_list_by_folder("fixture", self.view)
 
 class CakeOpenFolderCommand(SublimeCakephpFind):
 	def run(self, edit):
