@@ -1334,7 +1334,8 @@ class Path:
 			if str in grep_exclude_list:
 				grep_exclude_list.remove(str)
 
-		where = self.get_this_dir(view)
+		#where = self.get_this_dir(view)
+		where = self.folder_path['app']
 		if len(grep_exclude_list) > 0:
 			for str in grep_exclude_list:
 				where += ",-" + str
