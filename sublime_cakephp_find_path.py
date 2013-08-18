@@ -81,7 +81,7 @@ class Path:
 		]
 		return
 
-	def set_app(self, view):
+	def set_app(self, view, user_settings):
 		self.dir_path = {}
 		self.folder_path = {}
 		self.folder_path['core_top'] = None
@@ -95,7 +95,7 @@ class Path:
 		self.folder_path['app'] = None
 		self.folder_path['root'] = None
 		self.find_app(view)
-		self.find_core_top(view)
+		self.find_core_top(view, user_settings)
 		if self.major_version is None:
 			return False
 		self.set_folder_path()
@@ -116,7 +116,7 @@ class Path:
 			count += 1
 			dirname = os.path.dirname(dirname)
 
-	def find_core_top(self, view):
+	def find_core_top(self, view, user_settings):
 		if self.folder_path['app'] is not None:
 			# find relative
 			if os.path.exists(self.folder_path['root'] + "cake/VERSION.txt"):
@@ -126,9 +126,18 @@ class Path:
 			# composer install >= Version 2.1
 			elif os.path.exists(self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/VERSION.txt"):
 				self.folder_path['core_top'] = self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/"
+			# find path by setting option
+			if (self.folder_path['core_top'] is None and
+				user_settings is not None and "project_path" in user_settings):
+				for project in user_settings['project_path']:
+					if "app" in project and "cake" in project:
+						app_path = self.add_ptah_tail_slash(self.replace_file_path(project["app"]))
+						cake_path = self.add_ptah_tail_slash(self.replace_file_path(project["cake"]))
+						if app_path == self.folder_path['app']:
+							self.folder_path['core_top'] = cake_path
+							break
 			if self.folder_path['core_top'] is not None:
 				self.get_major_version_from_file()
-			# find path by setting option
 		else:
 			dirname = os.path.dirname(self.convert_file_path(view))
 			count = 0
@@ -168,9 +177,16 @@ class Path:
 				self.folder_path['root'] = os.path.dirname(self.folder_path['core_top'][0:-1]) + "/"
 
 	def convert_file_path(self, view):
-		file_path = view.file_name()
+		return self.replace_file_path(view.file_name())
+
+	def replace_file_path(self, file_path):
 		if os.name == "nt":
 			file_path = file_path.replace("\\", "/")
+		return file_path
+
+	def add_ptah_tail_slash(self, file_path):
+		if file_path[-1] != '/':
+			file_path += '/'
 		return file_path
 
 	def get_major_version_from_file(self):

@@ -25,6 +25,35 @@ You can find out file and open easily.
 
     Copy the directory to: "C:\Documents and Settings\<username>\Application Data\Sublime Text 2\Packages"
 
+## Setup
+If directory "lib/Cake" was not placed in default path, you can set the new path in Sublime settings:
+
+- Sample
+
+```linux
+/home/www/html/cakephp/app/         : app
+              /other_cakephp/app/   : app
+         /cakephp/2.3.9/lib/Cake/   : cake
+```
+
+Write on `/Sublime Text 2/Packages/User/Preferences.sublime-settings`
+```json
+    "sublime_cakephp_find":
+    {
+        "project_path":
+        [
+            {
+                "app": "/home/www/html/cakephp/app/",
+                "cake": "/home/www/cakephp/2.3.9/lib/Cake/"
+            },
+            {
+                "app": "/home/www/html/other_cakephp/app/",
+                "cake": "/home/www/cakephp/2.3.9/lib/Cake/"
+            }
+        ]
+    }
+```
+
 ## Switch Command
 It changes to a corresponding file. 
 

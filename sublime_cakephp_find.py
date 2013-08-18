@@ -81,8 +81,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.select_sub_name = None
 		self.select_sub_type = None
 		self.user_settings = self.view.settings().get('sublime_cakephp_find')
-		#if self.user_settings is not None:
-		if not self.path.set_app(self.view):
+		if not self.path.set_app(self.view, self.user_settings):
 			return False
 		return True
 
