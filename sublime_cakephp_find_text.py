@@ -683,4 +683,99 @@ class Text:
 			return False
 		return traits
 
+	def match_configure_read(self, text):
+		# Configure::read('system');
+		# Configure::read('db.default');
+		match = re.search("Configure::read\(['\"]([a-zA-Z0-9_\.]+)['\"]\)", text)
+		if match is None:
+			return False
+		return match.group(1)
+
+	def match_configure_load(self, text):
+		# Configure::load('settings');
+		# Configure::load('settings_production');
+		match = re.search("Configure::load\(['\"]([a-zA-Z0-9_\-]+)['\"]\)", text)
+		if match is None:
+			return False
+		return match.group(1)
+
+	def match_configure_load_variables(self, text):
+		# $config["mail"]['from'] = 'test@test.com';
+		# $config["test3"] = array(
+		# 	'test4' => [
+		# 		'db' => [
+		# 			'default' => '',
+		# 		]],
+		# 	'test5' => [
+		# 		'cc' => 'test@test.com'
+		# 	]
+		# );
+		text = text.replace("\r\n", "\n")
+		text = text.replace("\r", "\n")
+		split_text = text.split("\n")
+		list = []
+		count_line = -1
+		array_base_variable = ''
+		for line in split_text:
+			count_line += 1
+			# add value
+			# $config["mail"]['from'] = 'test@test.com';
+			match = re.search("config([a-zA-Z0-9_\[\]'\"]+)[ \t]*=[ \t]*['\"]", line)
+			if match is not None:
+				split = re.sub("[\['\"]", "", match.group(1)).split("]")
+				if split[-1] == '':
+					split.pop()
+				list.append([".".join(split), count_line])
+				continue
+			#     'cc' => 'test@test.com'
+			match = re.search("['\"]([a-zA-Z0-9_]+)['\"][ \t]*=>[ \t]*['\"]", line)
+			if match is not None:
+				if array_base_variable == '':
+					append_word = match.group(1)
+				else:
+					append_word = array_base_variable + "." + match.group(1)
+				list.append([append_word, count_line])
+				continue
+			# set base array
+			# $config["test3"] = array(
+			match = re.search("config([a-zA-Z0-9_\[\]'\"]+)?[ \t]*=[ \t]*(array\(|\[)", line)
+			if match is not None:
+				if match.group(1) is not None:
+					split = re.sub("[\['\"]", "", match.group(1)).split("]")
+					if split[-1] == '':
+						split.pop()
+					array_base_variable = ".".join(split)
+				continue
+			# add array
+			# 	'test5' => [
+			match = re.search("['\"]([a-zA-Z0-9_]+)['\"][ \t]*=>[ \t]*(array\(|\[)", line)
+			if match is not None:
+				if array_base_variable == '':
+					array_base_variable = match.group(1)
+				else:
+					array_base_variable += "." + match.group(1)
+				continue
+			# pop array
+			# 		]],
+			# );
+			match = re.search("[ \t]*([\)\],]+)(;?)[ \t]*", line)
+			if match is not None:
+				# end array
+				# );
+				if match.group(2):
+					array_base_variable = ''
+					continue
+				split = array_base_variable.split(".")
+				if len(split) <= 1:
+					array_base_variable = ''
+				else:
+					count = match.group(1).count("]") + match.group(1).count(")")
+					for var in range(count):
+						if len(split) > 0:
+							split.pop()
+					array_base_variable = '.'.join(split)
+				continue
+		return list
+
+
 

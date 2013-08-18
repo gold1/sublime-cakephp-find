@@ -236,6 +236,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_namespace_use() or
 			self.is_include_require() or
 			self.is_extend_implement() or
+			self.is_configure_read() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
 			return True
@@ -532,6 +533,20 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if file_path == False:
 			return False
 		self.path.switch_to_file(file_path, self.view)
+		return True
+
+	def is_configure_read(self):
+		word = Text().match_configure_read(self.select_line_str)
+		if not word or word != self.enclosed_word:
+			return False
+		load_files = self.path.get_configure_load_files(Text().match_configure_load, self.view)
+		if len(load_files) == 0:
+			return False
+		path_app_list = self.path.get_configure_file(Text().match_configure_load_variables, load_files, word)
+		if len(path_app_list) == 0:
+			return False
+		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
+		self.path.show_configure_list(self.view, path_app_list)
 		return True
 
 	def copy_word_to_find_panel(self, type = 'word'):

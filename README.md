@@ -183,8 +183,12 @@ A command to jump to file for the current word.
 | $time->listTimezones(); | lib/Cake/Utility/CakeTime.php : listTimezones() |
 | $Email->template('default'); | app/View/Emails/text/default.ctp |
 | 'datasource' => 'Database/Mysql' | lib/Cake/Model/Datasource/Database/Mysql.php |
+| Configure::read('db.default'); | app/Config/*****.php (*1) |
 | $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
+
+- *1  
+At first, the system searches "Configure::load("sample")" in "app/Config/core.php", "app/Config/bootstrap.php", and current file. if "app/Config/sample.php" is found, "db.default" word is looked for in file.
 
 ## Run Test
 If you want to run test, we recommend you this plug-in.

@@ -1407,3 +1407,60 @@ class Path:
 			else:
 				path += word
 		return path
+
+	def get_configure_load_files(self, func_match_configure_load, view):
+		load_files = []
+		if self.folder_path['app'] is None:
+			return load_files
+		path_list = [
+			self.convert_file_path(view),
+			self.folder_path['config'] + 'core.php',
+			self.folder_path['config'] + 'bootstrap.php'
+		]
+		for path in path_list:
+			if os.path.exists(path):
+				for line in open(path, "r"):
+					file_name = func_match_configure_load(line)
+					if file_name:
+						load_files.append(self.folder_path['config'] + file_name + ".php")
+		return load_files
+
+	def get_configure_file(self, func_match_configure_variables, load_files, word):
+		path_list = []
+		if self.folder_path['app'] is None:
+			return path_list
+		for path in load_files:
+			if os.path.exists(path):
+				f = open(path)
+				file_content = f.read()
+				f.close()
+				path_app = path.replace(self.folder_path['app'], "")
+				variable_list = func_match_configure_variables(file_content)
+				for variable_info in variable_list:
+					(variable, line_number) = variable_info
+					if word == variable:
+						path_list.append({'path':path_app, 'line_number':line_number})
+						break
+					if re.match(word + "\.", variable) is not None:
+						path_list.append({'path':path_app, 'line_number':line_number})
+						break
+		return path_list
+
+	def show_configure_list(self, view, configure_list):
+		self.show_list_view = view
+		self.configure_list = configure_list
+		if len(configure_list) == 1:
+			self.result_configure_list(0)
+			return
+		show_list = []
+		for info in configure_list:
+			show_list.append(info['path'])
+		view.window().show_quick_panel(show_list, self.result_configure_list)
+
+	def result_configure_list(self, result):
+		if result == -1: return
+		self.set_open_file_callback(self.open_file_callback, self.configure_list[result]['line_number'])
+		# open file
+		selected = self.configure_list[result]['path']
+		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
+
