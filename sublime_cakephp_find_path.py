@@ -604,7 +604,7 @@ class Path:
 
 	def show_dir_list_by_folder(self, dirname, view):
 		if self.folder_path['app'] is not None:
-			self.show_dir_list(self.path.folder_path[dirname], view)
+			self.show_dir_list(self.folder_path[dirname], view)
 
 	def show_dir_list(self, dir_path, view):
 		if not dir_path: return
