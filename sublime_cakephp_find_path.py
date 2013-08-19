@@ -859,10 +859,10 @@ class Path:
 
 		if type == 'controller':
 			if self.major_version == 1:
-				return self.check_and_add_tail(Inflector().underscore(new_name), '_controller') + add_ext
+				return self.add_tail(Inflector().underscore(new_name), '_controller') + add_ext
 			elif (self.major_version == 2 or
 				self.major_version == 3):
-				return self.check_and_add_tail(Inflector().camelize(new_name), 'Controller') + add_ext
+				return self.add_tail(Inflector().camelize(new_name), 'Controller') + add_ext
 		elif type == 'model':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
@@ -874,22 +874,22 @@ class Path:
 				return Inflector().underscore(new_name) + add_ext
 			elif (self.major_version == 2 or
 				self.major_version == 3):
-				return self.check_and_add_tail(Inflector().camelize(new_name), 'Component') + add_ext
+				return self.add_tail(Inflector().camelize(new_name), 'Component') + add_ext
 		elif type == 'behavior':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
 			elif (self.major_version == 2 or
 				self.major_version == 3):
-				return self.check_and_add_tail(Inflector().camelize(new_name), 'Behavior') + add_ext
+				return self.add_tail(Inflector().camelize(new_name), 'Behavior') + add_ext
 		elif type == 'helper':
 			if self.major_version == 1:
 				return Inflector().underscore(new_name) + add_ext
 			elif (self.major_version == 2 or
 				self.major_version == 3):
-				return self.check_and_add_tail(Inflector().camelize(new_name), 'Helper') + add_ext
+				return self.add_tail(Inflector().camelize(new_name), 'Helper') + add_ext
 		elif type == 'authenticate':
 			# self.major_version : 1 is not exist
-			return self.check_and_add_tail(Inflector().camelize(new_name), 'Authenticate') + add_ext
+			return self.add_tail(Inflector().camelize(new_name), 'Authenticate') + add_ext
 
 		if (type == 'element' or
 			type == 'view' or
@@ -934,6 +934,9 @@ class Path:
 		elif type == 'authenticate':
 			return self.check_and_add_tail(Inflector().camelize(name), 'Authenticate')
 		return None
+
+	def add_tail(self, name, add_name):
+		return name + add_name
 
 	def check_and_add_tail(self, name, add_name):
 		if len(name) < len(add_name) or name[-len(add_name):] != add_name:
