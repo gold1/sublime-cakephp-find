@@ -46,6 +46,8 @@ class FindParentThread(threading.Thread):
 			move_point = Text().search_point_function(self.find_name, file_content)
 		elif self.find_type == "variable":
 			move_point = Text().search_point_variable(self.find_name, file_content)
+		elif self.find_type == "class_head":
+			move_point = Text().search_point_class_head(file_content)
 		if move_point != -1:
 			sublime.set_timeout(functools.partial(self.parent.find_parent_open_file,
 								file_path), 0)
@@ -401,16 +403,13 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.select_class_name == "self" or
 			self.select_class_name == "parent"):
 			return self.find_type_this()
-		else:
-			file_path = self.path.search_class_file_all_dir(self.select_class_name, self.current_file_type)
-		if file_path == False:
-			return False
-		if self.select_sub_type is not None:
-			if self.select_sub_type == "function":
-				self.path.set_open_file_callback(Text().move_point_function, self.select_sub_name)
-			elif self.select_sub_type == "variable":
-				self.path.set_open_file_callback(Text().move_point_variable, self.select_sub_name)
-		self.path.switch_to_file(file_path, self.view)
+		# search class
+		list = [self.select_class_name]
+		if self.select_sub_type is None:
+			self.select_sub_type = "class_head"
+			self.select_sub_name = ""
+		thread = FindParentThread(self, self.select_sub_type, self.select_sub_name, list)
+		thread.start()
 		return True
 
 	def is_app_import(self):
