@@ -118,6 +118,8 @@ class Text:
 				sel.word = new_class_name
 		elif right_type == "object":
 			type = "object"
+		elif left_type == "object" and right_type == "string":
+			type = "variable"
 		else:
 			type = None
 
