@@ -89,6 +89,8 @@ class SearchViewWordThread(threading.Thread):
 						change_path = file_path.replace(self.parent.path.folder_path['app'], "")
 						find_list.append({'app_path':change_path, 'line_number':count})
 					count += 1
+		# delete duplicate
+		find_list = self.parent.path.delete_duplicate_list_key(find_list, 'app_path')
 		# call next
 		sublime.set_timeout(functools.partial(self.func_return,
 							self.parent.view,
@@ -1460,7 +1462,11 @@ class Path:
 					if re.match(word + "\.", variable) is not None:
 						path_list.append({'app_path':path_app, 'line_number':line_number})
 						break
-		# delete duplicate path
+		# delete duplicate
+		path_list = self.delete_duplicate_list_key(path_list, 'app_path')
+		return path_list
+
+	def delete_duplicate_list_key(self, path_list, key_name):
 		new_list = []
 		for info in path_list:
 			continue_flag = False
@@ -1476,6 +1482,12 @@ class Path:
 	def find_view_fetch_list(self, parent, view_block_name, func_match_view_fetch):
 		thread = SearchViewWordThread(parent, view_block_name,
 					func_match_view_fetch, self.show_panel_result_list)
+		thread.start()
+		return True
+
+	def find_view_block_list(self, parent, view_fetch_name, func_match_view_block):
+		thread = SearchViewWordThread(parent, view_fetch_name,
+					func_match_view_block, self.show_panel_result_list)
 		thread.start()
 		return True
 
