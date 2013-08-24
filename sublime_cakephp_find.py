@@ -556,7 +556,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if len(path_app_list) == 0:
 			return False
 		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
-		self.path.show_configure_list(self.view, path_app_list)
+		self.path.show_panel_result_list(self.view, path_app_list, {"line_number": True})
 		return True
 
 	def is_view_blocks(self):

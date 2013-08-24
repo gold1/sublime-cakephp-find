@@ -87,12 +87,13 @@ class SearchViewWordThread(threading.Thread):
 					result = self.func_match_text(line)
 					if result and result == self.search_name:
 						change_path = file_path.replace(self.parent.path.folder_path['app'], "")
-						find_list.append({'path':change_path, 'line_number':count})
+						find_list.append({'app_path':change_path, 'line_number':count})
 					count += 1
 		# call next
 		sublime.set_timeout(functools.partial(self.func_return,
 							self.parent.view,
-							find_list), 0)
+							find_list,
+							{"line_number": True}), 0)
 
 
 class Path:
@@ -1011,46 +1012,22 @@ class Path:
 					regexp = "#" + name
 				elif type == 'class':
 					regexp = "\." + name
-
-				css_list = []
+				result_list = []
 				for path in path_list:
 					line_num = 0
 					for line in open(path, 'r'):
 						match = re.search(regexp, line)
 						if match is not None:
-							result = []
-							relative_path = path.replace(thread_parent.folder_path['css'], "")
-							result.append(relative_path)
-							result.append(line_num)
-							css_list.append(result)
+							app_path = path.replace(thread_parent.folder_path['app'], "")
+							result_list.append({"app_path":app_path, "line_number":line_num})
 							break
 						line_num += 1
 
-				if len(css_list) == 0:
-					return
-				sublime.set_timeout(functools.partial(thread_parent.show_css_list,
+				sublime.set_timeout(functools.partial(thread_parent.show_panel_result_list,
 									thread_parent_view,
-									css_list), 0)
+									result_list,
+									{"line_number":True}), 0)
 		SearchCssWordThread().start()
-
-	def show_css_list(self, view, css_list):
-		self.show_list_view = view
-		self.css_list = css_list
-		if len(css_list) == 1:
-			self.result_css_list(0)
-			return
-
-		show_list = []
-		for info in css_list:
-			show_list.append(info[0])
-		view.window().show_quick_panel(show_list, self.result_css_list)
-
-	def result_css_list(self, result):
-		if result == -1: return
-		self.set_open_file_callback(self.open_file_callback, self.css_list[result][1])
-		# open file
-		selected = self.css_list[result][0]
-		self.switch_to_file(self.folder_path['css'] + selected, self.show_list_view)
 
 	def get_category_path(self, category, plugin_name = False, options = {}):
 		if 'core_top' in options:
@@ -1122,13 +1099,11 @@ class Path:
 			if (re.search(action_name + "." + self.view_extension + "$", after_path) is None or
 				re.search(controller_name, after_path) is None):
 				continue
-			find_list.append(path)
+			app_path = path.replace(self.folder_path["app"], "")
+			find_list.append({"app_path":app_path})
 		if len(find_list) == 0:
 			return False
-		if len(find_list) == 1:
-			self.switch_to_file(find_list[0], view)
-			return True
-		self.show_view_list(view, find_list)
+		self.show_panel_result_list(view, find_list)
 		return True
 
 	def get_file_list_recursive(self, root, options = {}):
@@ -1189,28 +1164,21 @@ class Path:
 		category_path = self.get_category_path('locale', plugin_name)
 		if not category_path:
 			return False
-		list = os.listdir(category_path)
-		locale_names = []
-		for name in list:
-			if os.path.isdir(category_path + name):
-				locale_names.append(name)
-		if len(locale_names) == 0:
-			return False
-		if len(locale_names) == 1:
-			self.switch_to_file(locale_names[0], view)
-			return True
 
 		if plugin_name:
 			file_name = Inflector().underscore(plugin_name) + ".po"
 		else:
 			file_name = "default.po"
-		self.show_list = []
-		self.result_path_list = []
-		for name in locale_names:
-			self.show_list.append("/" + name + "/LC_MESSAGES/" + file_name)
-			self.result_path_list.append(category_path + name + "/LC_MESSAGES/" + file_name)
-		self.show_list_view = view
-		view.window().show_quick_panel(self.show_list, self.switch_result_path)
+		local_list = os.listdir(category_path)
+		result_list = []
+		base_path = category_path.replace(self.folder_path['app'], "")
+		for name in local_list:
+			relative_path = name + "/LC_MESSAGES/" + file_name
+			if os.path.exists(category_path + relative_path):
+				result_list.append({"app_path":base_path + relative_path})
+		if len(result_list) == 0:
+			return False
+		self.show_panel_result_list(view, result_list)
 		return True
 
 	def split_plugin_name(self, name):
@@ -1224,22 +1192,21 @@ class Path:
 		return plugin_name, file_name
 
 	def switch_to_email_template(self, view, category_path, template_name):
-		show_list = []
-		self.result_path_list = []
-		show_base_path = category_path.replace(self.folder_path["app"], "")
-		if os.path.exists(category_path + 'text/' + template_name + "." + self.view_extension):
-			show_list.append(show_base_path + 'text/' + template_name + "." + self.view_extension)
-			self.result_path_list.append(category_path + 'text/' + template_name + "." + self.view_extension)
-		if os.path.exists(category_path + 'html/' + template_name + "." + self.view_extension):
-			show_list.append(show_base_path + 'html/' + template_name + "." + self.view_extension)
-			self.result_path_list.append(category_path + 'html/' + template_name + "." + self.view_extension)
-		if len(show_list) == 0:
+		path_list = []
+		result_list = []
+		base_path = category_path.replace(self.folder_path["app"], "")
+		relative_path = 'text/' + template_name + "." + self.view_extension
+		if os.path.exists(category_path + relative_path):
+			path_list.append(base_path + relative_path)
+		relative_path = 'html/' + template_name + "." + self.view_extension
+		if os.path.exists(category_path + relative_path):
+			path_list.append(base_path + relative_path)
+		if len(path_list) == 0:
 			return False
-		if len(show_list) == 1:
-			self.switch_to_file(category_path + show_list[0], view)
-			return True
-		self.show_list_view = view
-		view.window().show_quick_panel(show_list, self.switch_result_path)
+		for path in path_list:
+			app_path = path.replace(self.folder_path["app"], "")
+			result_list.append({'app_path':app_path})
+		self.show_panel_result_list(view, result_list)
 		return True
 
 	def switch_result_path(self, result):
@@ -1488,17 +1455,17 @@ class Path:
 				for variable_info in variable_list:
 					(variable, line_number) = variable_info
 					if word == variable:
-						path_list.append({'path':path_app, 'line_number':line_number})
+						path_list.append({'app_path':path_app, 'line_number':line_number})
 						break
 					if re.match(word + "\.", variable) is not None:
-						path_list.append({'path':path_app, 'line_number':line_number})
+						path_list.append({'app_path':path_app, 'line_number':line_number})
 						break
 		# delete duplicate path
 		new_list = []
 		for info in path_list:
 			continue_flag = False
 			for new_info in new_list:
-				if info['path'] == new_info['path']:
+				if info['app_path'] == new_info['app_path']:
 					continue_flag = True
 					break
 			if continue_flag:
@@ -1506,44 +1473,29 @@ class Path:
 			new_list.append(info)
 		return new_list
 
-	def show_configure_list(self, view, configure_list):
-		self.show_list_view = view
-		self.configure_list = configure_list
-		if len(configure_list) == 1:
-			self.result_configure_list(0)
-			return
-		show_list = []
-		for info in configure_list:
-			show_list.append(info['path'])
-		view.window().show_quick_panel(show_list, self.result_configure_list)
-
-	def result_configure_list(self, result):
-		if result == -1: return
-		self.set_open_file_callback(self.open_file_callback, self.configure_list[result]['line_number'])
-		# open file
-		selected = self.configure_list[result]['path']
-		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
-
 	def find_view_fetch_list(self, parent, view_block_name, func_match_view_fetch):
-		thread = SearchViewWordThread(parent, view_block_name, func_match_view_fetch, self.show_fetch_list)
+		thread = SearchViewWordThread(parent, view_block_name,
+					func_match_view_fetch, self.show_panel_result_list)
 		thread.start()
 		return True
 
-	def show_fetch_list(self, view, result_list):
+	def show_panel_result_list(self, view, result_list, option = {}):
 		self.show_list_view = view
 		self.result_list = result_list
+		self.result_list_option = option
 		if len(result_list) == 1:
 			self.open_result_file(0)
 			return
 		show_list = []
 		for info in result_list:
-			show_list.append(info['path'])
+			show_list.append(info['app_path'])
 		view.window().show_quick_panel(show_list, self.open_result_file)
 
 	def open_result_file(self, result):
 		if result == -1: return
-		self.set_open_file_callback(self.open_file_callback, self.result_list[result]['line_number'])
+		if "line_number" in self.result_list_option:
+			self.set_open_file_callback(self.open_file_callback, self.result_list[result]['line_number'])
 		# open file
-		selected = self.result_list[result]['path']
+		selected = self.result_list[result]['app_path']
 		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
 
