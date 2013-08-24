@@ -1041,7 +1041,9 @@ class Path:
 				plugin_name = Inflector().underscore(plugin_name)
 			elif (self.major_version == 2 or
 				self.major_version == 3):
-				plugin_name = Inflector().camelize(plugin_name)
+				if os.path.exists(self.folder_path['plugin'] + Inflector().camelize(plugin_name) + "/"):
+					plugin_name = Inflector().camelize(plugin_name)
+				# In version 2 or 3, nevertheless plugin name is used underscore version 1.
 			return self.folder_path['plugin'] + plugin_name + "/" + self.dir_path[category]
 		return self.folder_path['app'] + self.dir_path[category]
 
@@ -1428,6 +1430,12 @@ class Path:
 				path += word
 		return path
 
+	def get_configure_load_file(self, plugin_name, setting_name):
+		file_path = self.get_category_path("config", plugin_name) + setting_name + ".php"
+		if os.path.exists(file_path):
+			return file_path
+		return False
+
 	def get_configure_load_files(self, func_match_configure_load, view):
 		load_files = []
 		if self.folder_path['app'] is None:
@@ -1440,9 +1448,9 @@ class Path:
 		for path in path_list:
 			if os.path.exists(path):
 				for line in open(path, "r"):
-					file_name = func_match_configure_load(line)
-					if file_name:
-						load_files.append(self.folder_path['config'] + file_name + ".php")
+					(match_name, plugin_name, setting_name) = func_match_configure_load(line)
+					if setting_name:
+						load_files.append(self.get_category_path("config", plugin_name) + setting_name + ".php")
 		return load_files
 
 	def get_configure_file(self, func_match_configure_variables, load_files, word):

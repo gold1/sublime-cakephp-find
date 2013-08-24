@@ -237,6 +237,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_namespace_use() or
 			self.is_include_require() or
 			self.is_extend_implement() or
+			self.is_configure_load() or
 			self.is_configure_read() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
@@ -528,6 +529,16 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		if not class_name:
 			return False
 		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)
+		if file_path == False:
+			return False
+		self.path.switch_to_file(file_path, self.view)
+		return True
+
+	def is_configure_load(self):
+		(match_name, plugin_name, setting_name) = Text().match_configure_load(self.select_line_str)
+		if not setting_name or match_name != self.enclosed_word:
+			return False
+		file_path = self.path.get_configure_load_file(plugin_name, setting_name)
 		if file_path == False:
 			return False
 		self.path.switch_to_file(file_path, self.view)

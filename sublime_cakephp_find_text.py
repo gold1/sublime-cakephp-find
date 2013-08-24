@@ -695,11 +695,20 @@ class Text:
 
 	def match_configure_load(self, text):
 		# Configure::load('settings');
-		# Configure::load('settings_production');
-		match = re.search("Configure::load\(['\"]([a-zA-Z0-9_\-]+)['\"]\)", text)
+		# Configure::load('MyPlugin.settings');
+		match = re.search("Configure::load\(['\"]([a-zA-Z0-9_\-\.]+)['\"]\)", text)
 		if match is None:
-			return False
-		return match.group(1)
+			return False, False, False
+		split = match.group(1).split(".")
+		if len(split) > 2:
+			return False, False, False
+		elif len(split) == 2:
+			plugin_name = split[0]
+			setting_name = split[1]
+			return match.group(1), plugin_name, setting_name
+		else:
+			setting_name = split[0]
+			return match.group(1), False, setting_name
 
 	def match_configure_load_variables(self, text):
 		# $config["mail"]['from'] = 'test@test.com';
