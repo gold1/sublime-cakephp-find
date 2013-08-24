@@ -98,13 +98,13 @@ You can choose file from panel.
 | `ctrl + shift + c`, `ctrl + d` | current directory |cake_show_directory_list | 
 | `ctrl + shift + c`, `ctrl + c` | controller |cake_show_controller_list | 
 | `ctrl + shift + c`, `ctrl + m` | model |cake_show_model_list | 
-| `ctrl + shift + c`, `ctrl + v` | view |cake_show_view_list | 
+| `ctrl + shift + c`, `ctrl + v` | view |cake_show_vendor_list | 
 | `ctrl + shift + c`, `ctrl + o` | component |cake_show_component_list | 
 | `ctrl + shift + c`, `ctrl + b` | behavior |cake_show_behavior_list | 
 | `ctrl + shift + c`, `ctrl + h` | helper |cake_show_helper_list | 
 | `ctrl + shift + c`, `ctrl + l` | lib |cake_show_lib_list | 
 | `ctrl + shift + c`, `ctrl + shift + l` | layout |cake_show_layout_list | 
-| `ctrl + shift + c`, `ctrl + shift + v` | vendor |cake_show_vendor_list | 
+| `ctrl + shift + c`, `ctrl + shift + v` | vendor |cake_show_view_list | 
 | `ctrl + shift + c`, `ctrl + s` | css |cake_show_css_list | 
 | `ctrl + shift + c`, `ctrl + j` | javascript |cake_show_javascript_list | 
 | `ctrl + shift + c`, `ctrl + e` | element |cake_show_element_list | 
@@ -191,6 +191,8 @@ A command to jump to file for the current word.
 | $this->Html->script("popup"); | app/webroot/js/popup.js |
 | $this->Html->css("font"); | app/webroot/css/font.css |
 | $this->Html->image("cake.power.gif"); | open "app/webroot/img/cake.power.gif" |
+| $this->assign("side"), start("side"), prepend("side"), append("side") | app/View/****.ctp : $this->fetch("side") |
+| $this->fetch("side") | app/View/****.ctp : $this->assign("side"), start("side"), prepend("side"), append("side") |
 | &lt;span class="notice"&gt;&lt;/span&gt; | find app/webroot/css/* and open file |
 | &lt;div id="footer"&gt;&lt;/div&gt; | find app/webroot/css/* and open file |
 | **Css** | &nbsp; |
@@ -212,6 +214,7 @@ A command to jump to file for the current word.
 | $time->listTimezones(); | lib/Cake/Utility/CakeTime.php : listTimezones() |
 | $Email->template('default'); | app/View/Emails/text/default.ctp |
 | 'datasource' => 'Database/Mysql' | lib/Cake/Model/Datasource/Database/Mysql.php |
+| Configure::load('setting'); | app/Config/setting.php |
 | Configure::read('db.default'); | app/Config/*****.php (*1) |
 | $fixtures = array('app.comment'); | app/Test/Fixture/CommentFixture.php |
 | __("Hello!"); | app/Locale/eng/LC_MESSAGES/default.po |
