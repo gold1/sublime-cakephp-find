@@ -355,7 +355,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 
 	def is_new_class(self):
 		self.new_class_name = Text().match_new_class(self.select_line_str)
-		if not self.new_class_name:
+		if not self.new_class_name or self.new_class_name != self.select_word:
 			return False
 		file_path = self.path.search_class_file_all_dir(self.new_class_name, self.current_file_type)
 		if file_path == False:
