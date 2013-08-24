@@ -1289,17 +1289,12 @@ class Path:
 		elif (self.major_version == 2 or
 			self.major_version == 3):
 			file_name = Inflector().camelize(class_name) + "Fixture.php"
-			if plugin_name:
-				change_plugin_name = Inflector().camelize(plugin_name)
 
 		if type == "app":
 			file_path = self.folder_path["fixture"] + file_name
 		elif type == "plugin":
-			file_path = (self.folder_path["plugin"] + plugin_name + "/" +
+			file_path = (self.path.get_category_path("plugin", plugin_name) +
 				self.dir_path["fixture"] + file_name)
-			if not os.path.exists(file_path):
-				file_path = (self.folder_path["plugin"] + change_plugin_name + "/" +
-					self.dir_path["fixture"] + file_name)
 		elif type == "core":
 			file_path = self.folder_path["core_fixture"] + file_name
 		else:
