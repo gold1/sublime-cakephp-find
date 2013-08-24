@@ -1493,7 +1493,18 @@ class Path:
 					if re.match(word + "\.", variable) is not None:
 						path_list.append({'path':path_app, 'line_number':line_number})
 						break
-		return path_list
+		# delete duplicate path
+		new_list = []
+		for info in path_list:
+			continue_flag = False
+			for new_info in new_list:
+				if info['path'] == new_info['path']:
+					continue_flag = True
+					break
+			if continue_flag:
+				continue
+			new_list.append(info)
+		return new_list
 
 	def show_configure_list(self, view, configure_list):
 		self.show_list_view = view
