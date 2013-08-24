@@ -69,6 +69,32 @@ class CommandThread(threading.Thread):
 			self.timeout(callback, "Error.")
 
 
+class SearchViewWordThread(threading.Thread):
+	def __init__(self, parent, search_name, func_match_text, func_return):
+		self.parent = parent
+		self.search_name = search_name
+		self.func_match_text = func_match_text
+		self.func_return = func_return
+		threading.Thread.__init__(self)
+
+	def run(self):
+		view_list = self.parent.path.get_file_list_recursive(self.parent.path.folder_path["view"])
+		find_list = []
+		for file_path in view_list:
+			if os.path.exists(file_path):
+				count = 0
+				for line in open(file_path):
+					result = self.func_match_text(line)
+					if result and result == self.search_name:
+						change_path = file_path.replace(self.parent.path.folder_path['app'], "")
+						find_list.append({'path':change_path, 'line_number':count})
+					count += 1
+		# call next
+		sublime.set_timeout(functools.partial(self.func_return,
+							self.parent.view,
+							find_list), 0)
+
+
 class Path:
 	def __init__(self):
 		self.execute_extension_list = [
@@ -1485,5 +1511,28 @@ class Path:
 		self.set_open_file_callback(self.open_file_callback, self.configure_list[result]['line_number'])
 		# open file
 		selected = self.configure_list[result]['path']
+		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
+
+	def find_view_fetch_list(self, parent, view_block_name, func_match_view_fetch):
+		thread = SearchViewWordThread(parent, view_block_name, func_match_view_fetch, self.show_fetch_list)
+		thread.start()
+		return True
+
+	def show_fetch_list(self, view, result_list):
+		self.show_list_view = view
+		self.result_list = result_list
+		if len(result_list) == 1:
+			self.open_result_file(0)
+			return
+		show_list = []
+		for info in result_list:
+			show_list.append(info['path'])
+		view.window().show_quick_panel(show_list, self.open_result_file)
+
+	def open_result_file(self, result):
+		if result == -1: return
+		self.set_open_file_callback(self.open_file_callback, self.result_list[result]['line_number'])
+		# open file
+		selected = self.result_list[result]['path']
 		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
 

@@ -788,5 +788,21 @@ class Text:
 				continue
 		return list
 
+	def match_view_blocks(self, text):
+		# $this->assign("test", "assign");
+		# $this->start("test");
+		# $this->prepend("test", "prepend");
+		# $this->append("test", "append");
+		match = re.search("this->(assign|start|prepend|append)\(['\"]([a-zA-Z0-9_\-]+)['\"]", text)
+		if match is None:
+			return False
+		return match.group(2)
+
+	def match_view_fetch(self, text):
+		# $this->fetch('content');
+		match = re.search("this->fetch\(['\"]([a-zA-Z0-9_\-]+)['\"]", text)
+		if match is None:
+			return False
+		return match.group(1)
 
 

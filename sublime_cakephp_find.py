@@ -239,6 +239,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			self.is_extend_implement() or
 			self.is_configure_load() or
 			self.is_configure_read() or
+			self.is_view_blocks() or
 			self.is_enclosed_word() or
 			self.is_class_operator()):
 			return True
@@ -557,6 +558,13 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
 		self.path.show_configure_list(self.view, path_app_list)
 		return True
+
+	def is_view_blocks(self):
+		view_block_name = Text().match_view_blocks(self.select_line_str)
+		if not view_block_name:
+			return False
+		self.path.set_open_file_callback(Text().move_line_number, 0) # 0: dummy
+		return self.path.find_view_fetch_list(self, view_block_name, Text().match_view_fetch)
 
 	def copy_word_to_find_panel(self, type = 'word'):
 		if type == 'word':
