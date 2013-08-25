@@ -361,7 +361,7 @@ class Path:
 			self.dir_path['helper_test'] = "View/Helper/"
 			if self.folder_path['core_top'] is not None:
 				self.folder_path['core'] = self.folder_path['core_top']
-				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/Case/"
+				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/TestCase/"
 				self.folder_path['core_fixture'] = self.folder_path['core_top'] + "Test/Fixture/"
 				self.dir_path['core_test_relative'] = self.dir_path['test']
 				self.dir_path['core_controller'] = "Controller/"
@@ -873,7 +873,8 @@ class Path:
 					if file_path:
 						return file_path
 				# check direct
-				if self.major_version == 2:
+				if (self.major_version == 2 or
+					self.major_version == 3):
 					list = self.get_search_add_dir_list(current_file_type)
 					for class_type in list:
 						complete_file_name = self.complete_file_name(class_type, search_file_name)
