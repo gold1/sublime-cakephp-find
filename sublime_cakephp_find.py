@@ -423,7 +423,15 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			category_path = self.path.get_category_path(folder_name.lower(), plugin_name)
 			if not category_path:
 				return False
-			file_path = category_path + file_name + ".php"
+			unserscore_name = Inflector().underscore(file_name)
+			camelize_name = Inflector().camelize(file_name)
+			file_path = self.path.search_file_recursive(file_name + ".php", category_path)
+			if not file_path:
+				file_path = self.path.search_file_recursive(unserscore_name + ".php", category_path)
+				if not file_path:
+					file_path = self.path.search_file_recursive(camelize_name + ".php", category_path)
+					if not file_path:
+						return False
 			self.path.switch_to_file(file_path, self.view)
 		else:
 			file_path = self.path.search_class_file_all_dir(file_name, self.current_file_type)

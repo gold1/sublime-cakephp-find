@@ -546,7 +546,7 @@ class Path:
 	def match_plugin_file(self, view):
 		if self.folder_path['app'] is None:
 			return False
-		regexp = (self.folder_path['plugin'] + "(.+/)*([a-zA-Z0-9_]+)\.php$")
+		regexp = (self.folder_path['plugin'] + "(.+/)*([a-zA-Z0-9_]+)(\.test)?\.php$")
 		match = self.match(regexp, self.convert_file_path(view))
 		if match == False:
 			return False
