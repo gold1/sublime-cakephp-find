@@ -814,4 +814,123 @@ class Text:
 			return False
 		return match.group(1)
 
+	def match_model_actsas(self, text):
+		text = text.replace("\r\n", "\n")
+		text = text.replace("\r", "\n")
+		split_text = text.split("\n")
+		count_line = -1
+		comment_flag = False
+		found_flag = False
+		found_text = ''
+		for read_line in split_text:
+			count_line += 1
+			line = False
+			if comment_flag:
+				match = re.search("\*/", read_line)
+				if match is None:
+					cut_line = ''
+				else:
+					cut_line = read_line[match.end():]
+					comment_flag = False
+			else:
+				match = re.search("/\*", read_line)
+				if match is None:
+					cut_line = read_line
+				else:
+					cut_line = read_line[:match.start()]
+					comment_flag = True
+			match = re.search("//", cut_line)
+			if match is not None:
+				cut_line = cut_line[:match.start()]
+			if len(cut_line) == 0:
+				continue
+			# set base array
+			if found_flag:
+				match = re.search("(.*)(\)|\])[ \t]*;", cut_line)
+				if match is not None:
+					line = match.group(1)
+					found_text += line
+					break
+				else:
+					line = cut_line
+			else:
+				# public $actsAs = array(
+				match = re.search("(var|public)[ \t]+\$actsAs[ \t]*=[ \t]*(array\(|\[)(.*)", cut_line)
+				if match is not None:
+					found_flag = True
+					line = match.group(3)
+			if not line:
+				continue
+			found_text += line
+			# line over
+			match = re.search("(private|public|protected)[ \t]+function[ \t]", cut_line)
+			if match is not None:
+				break
+		# stop roop bug
+		roop_count = 0
+		parenthesis = 0
+		arrow_flag = False
+		get_word_flag = False
+		list = []
+		while len(found_text) > 0 and roop_count < 500:
+			# get class word
+			if parenthesis == 0 and arrow_flag == False:
+				match = re.match("^(['\"]([a-zA-Z0-9.]+)['\"])", found_text)
+				if match is not None:
+					found_text = found_text[len(match.group(1)):]
+					list.append(match.group(2))
+					continue
+			# word
+			if get_word_flag:
+				match = re.match("^(['\"])", found_text)
+				if match is not None:
+					get_word_flag = not get_word_flag
+					found_text = found_text[len(match.group(1)):]
+					continue
+				# get len(1)
+				found_text = found_text[1:]
+				continue
+			else:
+				match = re.match("^(['\"])", found_text)
+				if match is not None:
+					get_word_flag = not get_word_flag
+					found_text = found_text[len(match.group(1)):]
+					continue
+			# remove space
+			match = re.match("^([ \t]+)", found_text)
+			if match is not None:
+				found_text = found_text[len(match.group(1)):]
+				continue
+			# check arrow
+			match = re.match("^(=>)", found_text)
+			if match is not None:
+				found_text = found_text[len(match.group(1)):]
+				arrow_flag = True
+				continue
+			# check comma
+			match = re.match("^(,)", found_text)
+			if match is not None:
+				found_text = found_text[len(match.group(1)):]
+				if parenthesis == 0:
+					arrow_flag = False
+				continue
+			# check parenthesis add
+			match = re.match("^(array\(|\[)", found_text)
+			if match is not None:
+				found_text = found_text[len(match.group(1)):]
+				parenthesis += 1
+				continue
+			# check parenthesis delete
+			match = re.match("^(\)|\])", found_text)
+			if match is not None:
+				found_text = found_text[len(match.group(1)):]
+				parenthesis -= 1
+				# error
+				if parenthesis < 0:
+					break
+				continue
+			roop_count += 1
+		if len(list) == 0:
+			return False
+		return list
 

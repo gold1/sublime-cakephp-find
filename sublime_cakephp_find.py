@@ -59,6 +59,9 @@ class FindParentThread(threading.Thread):
 		traits = Text().match_use_trait(file_content)
 		if traits:
 			self.list += traits
+		actsas = Text().match_model_actsas(file_content)
+		if actsas:
+			self.list += actsas
 		# stop roop if bug
 		if self.count > 100:
 			return
@@ -617,6 +620,9 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		traits = Text().match_use_trait(Text().view_content(self.view))
 		if traits:
 			list += traits
+		actsas = Text().match_model_actsas(Text().view_content(self.view))
+		if actsas:
+			list += actsas
 		if len(list) == 0:
 			return True
 		thread = FindParentThread(self, self.select_sub_type, self.select_sub_name, list)
