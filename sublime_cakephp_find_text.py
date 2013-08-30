@@ -658,9 +658,11 @@ class Text:
 		#     \IteratorAggregate
 		# {
 		extend = implements = False
-		match = re.search("(class|interface|trait)[ \t]+[a-zA-Z0-9]+[ \t\r\n]+(extends[ \t\r\n]+([a-zA-Z0-9\\\\]+)[ \t\r\n]*)?(implements[ \t\r\n]+([a-zA-Z0-9, \t\r\n\\\\]+)[ \t\r\n]*)?[ \t\r\n\{]+", text)
+		match = re.search("(class|interface|trait)[ \t\r\n]+[a-zA-Z0-9]+([ \t\r\n]+extends[ \t\r\n]+([a-zA-Z0-9\\\\]+))?([ \t\r\n]+implements[ \t\r\n]+([a-zA-Z0-9, \t\r\n\\\\]+)[ \t\r\n]*)?[ \t\r\n]*{", text)
 		if match is None:
-			return False, False
+			match = re.search("(class|interface|trait)[ \t]+[a-zA-Z0-9]+([ \t]+extends[ \t]+([a-zA-Z0-9\\\\]+))?([ \t]+implements[ \t]+([a-zA-Z0-9, \t\\\\]+)[ \t]*)?([ \t]*{)?", text)
+			if match is None:
+				return False, False
 		type = match.group(1) # class, interface, trait
 		if match.group(3) is not None:
 			extend = match.group(3).split("\\")[-1]

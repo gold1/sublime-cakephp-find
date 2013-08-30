@@ -521,7 +521,8 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		return True
 
 	def is_extend_implement(self):
-		(extend, interfaces) = Text().match_extend_implement(self.select_line_str)
+		(line_extend, line_interfaces) = Text().match_extend_implement(self.select_line_str)
+		(extend, interfaces) = Text().match_extend_implement(Text().view_content(self.view))
 		class_name = False
 		if extend:
 			if extend == self.select_word:
@@ -530,12 +531,12 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 			for interface in interfaces:
 				if interface == self.select_word:
 					class_name = interface
-		# When a cursor is outside
+		# When a cursor is on line and outside word
 		if not class_name:
-			if extend:
-				class_name = extend
-			elif interfaces:
-				class_name = interfaces[0]
+			if line_extend:
+				class_name = line_extend
+			elif line_interfaces:
+				class_name = line_interfaces[0]
 		if not class_name:
 			return False
 		file_path = self.path.search_class_file_all_dir(class_name, self.current_file_type)
