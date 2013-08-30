@@ -435,16 +435,22 @@ class Text:
 
 	def match_app_import(self, line_content):
 		# App::import('Model', 'DebugKit.ToolbarAccess');
-		match = re.search("import\(['\"]([a-zA-Z0-9_]+)['\"],[ \t]*(array\()?['\"]([a-zA-Z0-9_/\.]+)['\"]", line_content)
+		# App::import('Vendor', 'georgious-cakephp-yaml-migrations-and-fixtures/spyc/spyc');
+		# App::import('Vendor', 'PclZip', array('file' => 'pclzip-2-8-2/pclzip.lib.php'));
+		match = re.search("import\(['\"]([a-zA-Z0-9_]+)['\"],[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)['\"](,[ \t]*array\((.*?))?\)", line_content)
 		if match is None:
 			return False, False, False
 		folder_name = match.group(1)
-		split = match.group(3).split('.')
+		split = match.group(2).split('.')
 		if len(split) > 1:
 			plugin_name = split[0]
 		else:
 			plugin_name = False
 		file_name = split[-1]
+		# check option file
+		file_match = re.search("['\"]file['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)\.php['\"]", match.group(4))
+		if file_match is not None:
+			file_name = file_match.group(1)
 		return plugin_name, folder_name, file_name
 
 	def match_app_uses(self, line_content):
