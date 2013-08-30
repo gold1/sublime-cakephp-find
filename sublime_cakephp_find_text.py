@@ -314,6 +314,7 @@ class Text:
 		# $this->render("view", "layout") or
 		# $this->render('/Elements/ajaxreturn');
 		# $this->render("DebugKit.ToolbarAccess/history_state");
+		# $this->render("/common/feed.atom");
 		match = re.search("render\(['\"]([a-zA-Z0-9_/\.]+)['\"](,[ \t]*['\"]([a-zA-Z0-9_]+)['\"])?", line_content)
 		if match is None:
 			return False, False, False, False
@@ -321,14 +322,14 @@ class Text:
 		if match.group(3) is not None:
 			layout_name = match.group(3)
 		split = match.group(1).split('.')
-		if len(split) > 1:
+		if len(split) > 1 and re.search("/", split[0]) is None:
 			plugin_name = split[0]
 			split = split[1].split('/')
 			controller_name = split[0]
 			view_name = '/'.join(split[1:])
 		else:
 			plugin_name = False
-			view = split[-1]
+			view = match.group(1)
 			if view[0:1] == '/':
 				view = view[1:]
 				split = view.split('/')
