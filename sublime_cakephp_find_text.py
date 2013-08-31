@@ -449,9 +449,10 @@ class Text:
 			plugin_name = False
 		file_name = split[-1]
 		# check option file
-		file_match = re.search("['\"]file['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)\.php['\"]", match.group(4))
-		if file_match is not None:
-			file_name = file_match.group(1)
+		if match.group(4) is not None:
+			file_match = re.search("['\"]file['\"][ \t]*=>[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)\.php['\"]", match.group(4))
+			if file_match is not None:
+				file_name = file_match.group(1)
 		return plugin_name, folder_name, file_name
 
 	def match_app_uses(self, line_content):
