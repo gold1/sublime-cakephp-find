@@ -280,7 +280,7 @@ class Text:
 		self.move_view_point(view, point)
 
 	def search_point_function(self, function_name, text):
-		match = re.search("function " + function_name + " *\(", text)
+		match = re.search("function[ \t]+\&?" + function_name + "[ \t]*\(", text)
 		if match is None:
 			return -1
 		return match.start(0)
