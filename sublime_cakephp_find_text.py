@@ -24,12 +24,12 @@ class Text:
 		select_region = view.sel()
 		point = view.line(select_region[0]).end()
 		before_content = view.substr(sublime.Region(0, point))
-		matches = re.finditer("function ([a-zA-Z0-9_]+) *\(", before_content)
+		matches = re.finditer("function[ \t]+([a-zA-Z0-9_]+)[ \t]*\(", before_content)
 		for match in matches:
 			action_name = match.group(1)
 		if action_name is None:
 			after_content = view.substr(sublime.Region(point, view.size()))
-			match = re.search("function ([a-zA-Z0-9_]+) *\(", after_content)
+			match = re.search("function[ \t]+([a-zA-Z0-9_]+)[ \t]*\(", after_content)
 			if not match is None:
 				action_name = match.group(1)
 		return action_name
@@ -315,7 +315,7 @@ class Text:
 		# $this->render('/Elements/ajaxreturn');
 		# $this->render("DebugKit.ToolbarAccess/history_state");
 		# $this->render("/common/feed.atom");
-		match = re.search("render\(['\"]([a-zA-Z0-9_/\.]+)['\"](,[ \t]*['\"]([a-zA-Z0-9_]+)['\"])?", line_content)
+		match = re.search("render\([ \t]*['\"]([a-zA-Z0-9_/\.]+)['\"](,[ \t]*['\"]([a-zA-Z0-9_]+)['\"])?", line_content)
 		if match is None:
 			return False, False, False, False
 		layout_name = None
@@ -359,7 +359,7 @@ class Text:
 		# renderElement("photo")
 		# element("photo")
 		# element("DebugKit.log_panel");
-		match = re.search("(renderElement|element)\([\"\']([a-zA-Z0-9_/\.]+)[\"\']", line_content)
+		match = re.search("(renderElement|element)\([ \t]*[\"\']([a-zA-Z0-9_/\.]+)[\"\']", line_content)
 		if match is None:
 			return None, None
 		split = match.group(2).split('.')
@@ -373,7 +373,7 @@ class Text:
 	def match_javascript_function(self, line_content):
 		# $javascript->link("window");
 		# Html->script("window");
-		match = re.search("(\$javascript->link|Html->script)\([\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
+		match = re.search("(\$javascript->link|Html->script)\([ \t]*[\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
 		if match is None:
 			return None
 		return match.group(2)
@@ -381,7 +381,7 @@ class Text:
 	def match_css_function(self, line_content):
 		# $html->css("font")
 		# $this->Html->css("font")
-		match = re.search("(\$html->css|Html->css)\([\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
+		match = re.search("(\$html->css|Html->css)\([ \t]*[\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
 		if match is None:
 			return None
 		return match.group(2)
@@ -415,7 +415,7 @@ class Text:
 	def match_html_image(self, line_content):
 		# $html->image("cake.icon.png");
 		# $this->Html->image("ss/cake.icon.png");
-		match = re.search("(\$html->image|Html->image)\([\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
+		match = re.search("(\$html->image|Html->image)\([ \t]*[\"\']([a-zA-Z0-9_/\-\.]+)[\"\']", line_content)
 		if match is None:
 			return None
 		return self.match_image_extension(match.group(2))
@@ -428,7 +428,7 @@ class Text:
 	def match_new_class(self, line_content):
 		# $my_class = new TestClass();
 		# new Error\Exception(
-		match = re.search("new ([a-zA-Z0-9_\\\\]+)[(;]", line_content)
+		match = re.search("new[ \t]+([a-zA-Z0-9_\\\\]+)[(;]", line_content)
 		if match is None:
 			return False
 		class_name = match.group(1).split("\\")[-1]
@@ -438,7 +438,7 @@ class Text:
 		# App::import('Model', 'DebugKit.ToolbarAccess');
 		# App::import('Vendor', 'georgious-cakephp-yaml-migrations-and-fixtures/spyc/spyc');
 		# App::import('Vendor', 'PclZip', array('file' => 'pclzip-2-8-2/pclzip.lib.php'));
-		match = re.search("import\(['\"]([a-zA-Z0-9_]+)['\"],[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)['\"](,[ \t]*array\((.*?))?\)", line_content)
+		match = re.search("import\([ \t]*['\"]([a-zA-Z0-9_]+)['\"],[ \t]*['\"]([a-zA-Z0-9_/\-\.]+)['\"](,[ \t]*array\((.*?))?\)", line_content)
 		if match is None:
 			return False, False, False
 		folder_name = match.group(1)
@@ -457,7 +457,7 @@ class Text:
 
 	def match_app_uses(self, line_content):
 		# App::uses('TimedBehavior', 'DebugKit.Model/Behavior');
-		match = re.search("App::uses\(['\"]([a-zA-Z0-9]+)['\"],[ \t]*['\"]([a-zA-Z0-9/\.]+)['\"]", line_content)
+		match = re.search("App::uses\([ \t]*['\"]([a-zA-Z0-9]+)['\"],[ \t]*['\"]([a-zA-Z0-9/\.]+)['\"]", line_content)
 		if match is None:
 			return False, False, False
 		file_name = match.group(1)
@@ -500,12 +500,12 @@ class Text:
 	def match_local_function(self, line_content):
 		# __("Hello!");
 		# __c("Hello!");
-		match = re.search("__[c]?\(['\"](.*?)['\"][,\)]", line_content)
+		match = re.search("__[c]?\([ \t]*['\"](.*?)['\"][,\)]", line_content)
 		if match is not None:
 			return False, match.group(1)
 		# __d("domain", "Hello!");
 		# __dc("domain", "Hello!");
-		match = re.search("__d[c]?\(['\"](.*?)['\"],[ \t]*['\"](.*?)['\"][,\)]", line_content)
+		match = re.search("__d[c]?\([ \t]*['\"](.*?)['\"],[ \t]*['\"](.*?)['\"][,\)]", line_content)
 		if match is not None:
 			return match.group(1), match.group(2)
 		return False, False
@@ -515,7 +515,7 @@ class Text:
 		# ->template('default', 'default');
 		# ->template(false, 'default');
 		# ->template('DebugKit.default', 'DebugKit.default');
-		match = re.search("->template\((false|['\"]([a-zA-Z0-9_\.]+)['\"])(,[ \t]*['\"]([a-zA-Z0-9_\.]+)['\"])?", line_content)
+		match = re.search("->template\([ \t]*(false|['\"]([a-zA-Z0-9_\.]+)['\"])(,[ \t]*['\"]([a-zA-Z0-9_\.]+)['\"])?", line_content)
 		if match is None:
 			return False, False
 		template_name = match.group(2)
@@ -698,7 +698,7 @@ class Text:
 	def match_configure_read(self, text):
 		# Configure::read('system');
 		# Configure::read('db.default');
-		match = re.search("Configure::read\(['\"]([a-zA-Z0-9_\.]+)['\"]\)", text)
+		match = re.search("Configure::read\([ \t]*['\"]([a-zA-Z0-9_\.]+)['\"]\)", text)
 		if match is None:
 			return False
 		return match.group(1)
@@ -706,7 +706,7 @@ class Text:
 	def match_configure_load(self, text):
 		# Configure::load('settings');
 		# Configure::load('MyPlugin.settings');
-		match = re.search("Configure::load\(['\"]([a-zA-Z0-9_\-\.]+)['\"]\)", text)
+		match = re.search("Configure::load\([ \t]*['\"]([a-zA-Z0-9_\-\.]+)['\"]\)", text)
 		if match is None:
 			return False, False, False
 		split = match.group(1).split(".")
@@ -803,14 +803,14 @@ class Text:
 		# $this->start("test");
 		# $this->prepend("test", "prepend");
 		# $this->append("test", "append");
-		match = re.search("this->(assign|start|prepend|append)\(['\"]([a-zA-Z0-9_\-]+)['\"]", text)
+		match = re.search("this->(assign|start|prepend|append)\([ \t]*['\"]([a-zA-Z0-9_\-]+)['\"]", text)
 		if match is None:
 			return False
 		return match.group(2)
 
 	def match_view_fetch(self, text):
 		# $this->fetch('content');
-		match = re.search("this->fetch\(['\"]([a-zA-Z0-9_\-]+)['\"]", text)
+		match = re.search("this->fetch\([ \t]*['\"]([a-zA-Z0-9_\-]+)['\"]", text)
 		if match is None:
 			return False
 		return match.group(1)
