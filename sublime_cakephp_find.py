@@ -114,7 +114,7 @@ class SublimeCakephpFind(sublime_plugin.TextCommand):
 		self.action_name = Text().find_action_name_this_place(self.view)
 		if self.action_name is not None:
 			# private function
-			if self.action_name[0] == '_':
+			if self.action_name[0] == '_' or self.action_name[-1] == '_':
 				self.action_name = None
 			else:
 				self.lower_camelized_action_name = Inflector().variablize(self.action_name)
