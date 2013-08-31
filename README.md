@@ -4,7 +4,7 @@ You can find out file and open easily.
 
 ## Requirements
 - Sublime Text 2.x
-- CakePHP ver.1.3.x or ver.2.x or 3.0-dev(Update: 2013/08/10)
+- CakePHP ver.1.3.x or ver.2.x or 3.0-dev
 
 ## Installation
 #### OSX
