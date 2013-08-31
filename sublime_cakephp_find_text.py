@@ -839,7 +839,7 @@ class Text:
 				else:
 					cut_line = read_line[:match.start()]
 					comment_flag = True
-			match = re.search("//", cut_line)
+			match = re.search("(//|#)", cut_line)
 			if match is not None:
 				cut_line = cut_line[:match.start()]
 			if len(cut_line) == 0:
@@ -871,6 +871,8 @@ class Text:
 		parenthesis = 0
 		arrow_flag = False
 		get_word_flag = False
+		get_word_start_char = ''
+		get_word = ''
 		list = []
 		while len(found_text) > 0 and roop_count < 500:
 			# get class word
@@ -882,18 +884,26 @@ class Text:
 					continue
 			# word
 			if get_word_flag:
-				match = re.match("^(['\"])", found_text)
+				match = re.match("^(\\\\" + get_word_start_char + ")", found_text)
 				if match is not None:
-					get_word_flag = not get_word_flag
 					found_text = found_text[len(match.group(1)):]
 					continue
-				# get len(1)
-				found_text = found_text[1:]
+				else:
+					match = re.match("^(\\" + get_word_start_char + ")", found_text)
+					if match is not None:
+						get_word = ''
+						get_word_flag = not get_word_flag
+						found_text = found_text[len(match.group(1)):]
+						continue
+					# get len(1)
+					get_word += found_text[:1]
+					found_text = found_text[1:]
 				continue
 			else:
 				match = re.match("^(['\"])", found_text)
 				if match is not None:
 					get_word_flag = not get_word_flag
+					get_word_start_char = match.group(1)
 					found_text = found_text[len(match.group(1)):]
 					continue
 			# remove space
@@ -929,6 +939,8 @@ class Text:
 				if parenthesis < 0:
 					break
 				continue
+			# get len(1)
+			found_text = found_text[1:]
 			roop_count += 1
 		if len(list) == 0:
 			return False
