@@ -86,11 +86,10 @@ class SearchViewWordThread(threading.Thread):
 				for line in open(file_path):
 					result = self.func_match_text(line)
 					if result and result == self.search_name:
-						change_path = file_path.replace(self.parent.path.folder_path['app'], "")
-						find_list.append({'app_path':change_path, 'line_number':count})
+						find_list.append({"root_path":file_path, 'line_number':count})
 					count += 1
 		# delete duplicate
-		find_list = self.parent.path.delete_duplicate_list_key(find_list, 'app_path')
+		find_list = self.parent.path.delete_duplicate_list_key(find_list, "root_path")
 		# call next
 		sublime.set_timeout(functools.partial(self.func_return,
 							self.parent.view,
@@ -155,6 +154,9 @@ class Path:
 			# composer install >= Version 2.1
 			elif os.path.exists(self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/VERSION.txt"):
 				self.folder_path['core_top'] = self.folder_path['root'] + "Vendor/pear-pear.cakephp.org/CakePHP/Cake/"
+			# composer install >= Version 3.0
+			elif os.path.exists(self.folder_path['root'] + "vendor/cakephp/cakephp/VERSION.txt"):
+				self.folder_path['core_top'] = self.folder_path['root'] + "vendor/cakephp/cakephp/Cake/"
 			# find path by setting option
 			if (self.folder_path['core_top'] is None and
 				user_settings is not None and "project_path" in user_settings):
@@ -172,8 +174,16 @@ class Path:
 			count = 0
 			count_limit = 10
 			while count < count_limit:
-				if os.path.exists(dirname + "/VERSION.txt"):
+				# version 1, 2
+				if (os.path.exists(dirname + "/VERSION.txt") and
+					os.path.exists(dirname + "/bootstrap.php")):
 					self.folder_path['core_top'] = dirname + "/"
+					self.get_major_version_from_file()
+					break
+				# version 3
+				if (os.path.exists(dirname + "/VERSION.txt") and
+					os.path.exists(dirname + "/Cake")):
+					self.folder_path['core_top'] = dirname + "/Cake/"
 					self.get_major_version_from_file()
 					break
 				count += 1
@@ -219,27 +229,27 @@ class Path:
 		return file_path
 
 	def get_major_version_from_file(self):
+		# version 1, 2
 		path = self.folder_path['core_top'] + "VERSION.txt"
-		if os.path.exists(path):
-			for line in open(path, "r"):
-				match = re.search("([1-9])\.([0-9])\.([0-9])+", line)
-				if match is not None:
-					self.major_version = int(match.group(1))
+		if not os.path.exists(path):
+			# version 3
+			path = os.path.dirname(os.path.dirname(self.folder_path['core_top'])) + "/VERSION.txt"
+		if not os.path.exists(path):
+			return
+		for line in open(path, "r"):
+			match = re.search("([1-9])\.([0-9])\.([0-9])+", line)
+			if match is not None:
+				self.major_version = int(match.group(1))
 
 	def get_major_version_from_path(self):
-		if os.path.exists(self.folder_path['app'] + "controllers"):
-			self.major_version = 1
+		if os.path.exists(self.folder_path['app'] + "Config/app.php"):
+			self.major_version = 3
 		elif os.path.exists(self.folder_path['app'] + "Controller"):
 			self.major_version = 2
-		elif os.path.exists(self.folder_path['app'] + "Config/app.php"):
-			self.major_version = 3
+		elif os.path.exists(self.folder_path['app'] + "controllers"):
+			self.major_version = 1
 
 	def set_folder_path(self):
-		self.dir_path['css'] = "webroot/css/"
-		self.dir_path['javascript'] = "webroot/js/"
-		self.dir_path['image'] = "webroot/img/"
-		self.dir_path['tmp'] = "tmp/"
-		self.dir_path['cache'] = "tmp/cache/"
 
 		if self.major_version == 1:
 			self.dir_path['config'] = "config/"
@@ -253,20 +263,27 @@ class Path:
 			self.dir_path['authenticate'] = "Controller/Component/Auth/" # not found
 			self.dir_path['acl'] = "Controller/Component/Acl/" # not found
 			self.dir_path['datasource'] = "models/datasources/"
-			self.dir_path['vendor'] = "vendors/"
 			self.dir_path['layout'] = "views/layouts/"
 			self.dir_path['element'] = "views/elements/"
 			self.dir_path['error'] = "views/errors/"
 			self.dir_path['email'] = "views/elements/email/"
 			self.dir_path['email_layout'] = "views/layouts/email/"
 			self.dir_path['scaffold'] = "views/scaffolds/"
-			self.dir_path['plugin'] = "plugins/"
 			self.dir_path['test'] = "tests/cases/"
 			self.dir_path['fixture'] = "tests/fixtures/"
 			self.dir_path['locale'] = "locale/"
 			self.dir_path['component_test'] = "components/"
 			self.dir_path['behavior_test'] = "behaviors/"
 			self.dir_path['helper_test'] = "helpers/"
+
+			self.dir_path['vendor'] = "vendors/"
+			self.folder_path['vendor'] = self.folder_path['app'] + "vendors/"
+			self.folder_path['plugin'] = self.folder_path['app'] + "plugins/"
+			self.folder_path['css'] = self.folder_path['app'] + "webroot/css/"
+			self.folder_path['javascript'] = self.folder_path['app'] + "webroot/js/"
+			self.folder_path['image'] = self.folder_path['app'] + "webroot/img/"
+			self.folder_path['tmp'] = self.folder_path['app'] + "tmp/"
+			self.folder_path['cache'] = self.folder_path['app'] + "tmp/cache/"
 			if self.folder_path['core_top'] is not None:
 				self.folder_path['core'] = self.folder_path['core_top'] + "libs/"
 				self.folder_path['core_test'] = self.folder_path['core_top'] + "tests/cases/libs/"
@@ -299,20 +316,27 @@ class Path:
 			self.dir_path['authenticate'] = "Controller/Component/Auth/"
 			self.dir_path['acl'] = "Controller/Component/Acl/"
 			self.dir_path['datasource'] = "Model/Datasource/"
-			self.dir_path['vendor'] = "Vendor/"
 			self.dir_path['layout'] = "View/Layouts/"
 			self.dir_path['element'] = "View/Elements/"
 			self.dir_path['error'] = "View/Errors/"
 			self.dir_path['email'] = "View/Emails/"
 			self.dir_path['email_layout'] = "View/Layouts/Emails/"
 			self.dir_path['scaffold'] = "View/Scaffolds/"
-			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/Case/"
 			self.dir_path['fixture'] = "Test/Fixture/"
 			self.dir_path['locale'] = "Locale/"
 			self.dir_path['component_test'] = "Controller/Component/"
 			self.dir_path['behavior_test'] = "Model/Behavior/"
 			self.dir_path['helper_test'] = "View/Helper/"
+
+			self.dir_path['vendor'] = "Vendor/"
+			self.folder_path['vendor'] = self.folder_path['app'] + "Vendor/"
+			self.folder_path['plugin'] = self.folder_path['app'] + "Plugin/"
+			self.folder_path['css'] = self.folder_path['app'] + "webroot/css/"
+			self.folder_path['javascript'] = self.folder_path['app'] + "webroot/js/"
+			self.folder_path['image'] = self.folder_path['app'] + "webroot/img/"
+			self.folder_path['tmp'] = self.folder_path['app'] + "tmp/"
+			self.folder_path['cache'] = self.folder_path['app'] + "tmp/cache/"
 			if self.folder_path['core_top'] is not None:
 				self.folder_path['core'] = self.folder_path['core_top']
 				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/Case/"
@@ -346,19 +370,27 @@ class Path:
 			self.dir_path['acl'] = "Controller/Component/Acl/"
 			self.dir_path['datasource'] = "Model/Datasource/"
 			self.dir_path['vendor'] = "vendor/"
-			self.dir_path['layout'] = "View/Layouts/"
-			self.dir_path['element'] = "View/Elements/"
+			self.dir_path['layout'] = "View/Layout/"
+			self.dir_path['element'] = "View/Element/"
 			self.dir_path['error'] = "View/Errors/"
-			self.dir_path['email'] = "View/Emails/"
-			self.dir_path['email_layout'] = "View/Layouts/Emails/"
+			self.dir_path['email'] = "View/Email/"
+			self.dir_path['email_layout'] = "View/Layout/Email/"
 			self.dir_path['scaffold'] = "View/Scaffolds/"
-			self.dir_path['plugin'] = "Plugin/"
 			self.dir_path['test'] = "Test/TestCase/"
 			self.dir_path['fixture'] = "Test/Fixture/"
 			self.dir_path['locale'] = "Locale/"
 			self.dir_path['component_test'] = "Controller/Component/"
 			self.dir_path['behavior_test'] = "Model/Behavior/"
 			self.dir_path['helper_test'] = "View/Helper/"
+
+			self.dir_path['vendor'] = "vendor/"
+			self.folder_path['vendor'] = self.folder_path['root'] + "vendor/"
+			self.folder_path['plugin'] = self.folder_path['root'] + "Plugin/"
+			self.folder_path['css'] = self.folder_path['root'] + "webroot/css/"
+			self.folder_path['javascript'] = self.folder_path['root'] + "webroot/js/"
+			self.folder_path['image'] = self.folder_path['root'] + "webroot/img/"
+			self.folder_path['tmp'] = self.folder_path['root'] + "tmp/"
+			self.folder_path['cache'] = self.folder_path['root'] + "tmp/cache/"
 			if self.folder_path['core_top'] is not None:
 				self.folder_path['core'] = self.folder_path['core_top']
 				self.folder_path['core_test'] = self.folder_path['core_top'] + "Test/TestCase/"
@@ -381,9 +413,6 @@ class Path:
 				self.folder_path['app_test_cases'] = self.folder_path['app'] + 'Test/TestCase'
 
 		list = [
-			'css',
-			'javascript',
-			'image',
 			# common
 			'config',
 			'controller',
@@ -396,17 +425,13 @@ class Path:
 			'authenticate',
 			'acl',
 			'datasource',
-			'vendor',
 			'layout',
 			'element',
 			'error',
 			'email',
 			'email_layout',
 			'scaffold',
-			'plugin',
 			'test',
-			'tmp',
-			'cache',
 			'fixture',
 			'locale',
 		]
@@ -1021,8 +1046,7 @@ class Path:
 					for line in open(path, 'r'):
 						match = re.search(regexp, line)
 						if match is not None:
-							app_path = path.replace(thread_parent.folder_path['app'], "")
-							result_list.append({"app_path":app_path, "line_number":line_num})
+							result_list.append({"root_path":path, "line_number":line_num})
 							break
 						line_num += 1
 
@@ -1102,8 +1126,7 @@ class Path:
 			if (re.search(action_name + "." + self.view_extension + "$", after_path) is None or
 				re.search(controller_name, after_path) is None):
 				continue
-			app_path = path.replace(self.folder_path["app"], "")
-			find_list.append({"app_path":app_path})
+			find_list.append({"root_path":path})
 		if len(find_list) == 0:
 			return False
 		self.show_panel_result_list(view, find_list)
@@ -1174,11 +1197,10 @@ class Path:
 			file_name = "default.po"
 		local_list = os.listdir(category_path)
 		result_list = []
-		base_path = category_path.replace(self.folder_path['app'], "")
 		for name in local_list:
 			relative_path = name + "/LC_MESSAGES/" + file_name
 			if os.path.exists(category_path + relative_path):
-				result_list.append({"app_path":base_path + relative_path})
+				result_list.append({"root_path":category_path + relative_path})
 		if len(result_list) == 0:
 			return False
 		self.show_panel_result_list(view, result_list)
@@ -1197,18 +1219,16 @@ class Path:
 	def switch_to_email_template(self, view, category_path, template_name):
 		path_list = []
 		result_list = []
-		base_path = category_path.replace(self.folder_path["app"], "")
 		relative_path = 'text/' + template_name + "." + self.view_extension
 		if os.path.exists(category_path + relative_path):
-			path_list.append(base_path + relative_path)
+			path_list.append(category_path + relative_path)
 		relative_path = 'html/' + template_name + "." + self.view_extension
 		if os.path.exists(category_path + relative_path):
-			path_list.append(base_path + relative_path)
+			path_list.append(category_path + relative_path)
 		if len(path_list) == 0:
 			return False
 		for path in path_list:
-			app_path = path.replace(self.folder_path["app"], "")
-			result_list.append({'app_path':app_path})
+			result_list.append({"root_path":path})
 		self.show_panel_result_list(view, result_list)
 		return True
 
@@ -1446,25 +1466,22 @@ class Path:
 
 	def get_configure_file(self, func_match_configure_variables, load_files, word):
 		path_list = []
-		if self.folder_path['app'] is None:
-			return path_list
 		for path in load_files:
 			if os.path.exists(path):
 				f = open(path)
 				file_content = f.read()
 				f.close()
-				path_app = path.replace(self.folder_path['app'], "")
 				variable_list = func_match_configure_variables(file_content)
 				for variable_info in variable_list:
 					(variable, line_number) = variable_info
 					if word == variable:
-						path_list.append({'app_path':path_app, 'line_number':line_number})
+						path_list.append({"root_path":path, 'line_number':line_number})
 						break
 					if re.match(word + "\.", variable) is not None:
-						path_list.append({'app_path':path_app, 'line_number':line_number})
+						path_list.append({"root_path":path, 'line_number':line_number})
 						break
 		# delete duplicate
-		path_list = self.delete_duplicate_list_key(path_list, 'app_path')
+		path_list = self.delete_duplicate_list_key(path_list, "root_path")
 		return path_list
 
 	def delete_duplicate_list_key(self, path_list, key_name):
@@ -1472,7 +1489,7 @@ class Path:
 		for info in path_list:
 			continue_flag = False
 			for new_info in new_list:
-				if info['app_path'] == new_info['app_path']:
+				if info["root_path"] == new_info["root_path"]:
 					continue_flag = True
 					break
 			if continue_flag:
@@ -1501,7 +1518,7 @@ class Path:
 			return
 		show_list = []
 		for info in result_list:
-			show_list.append(info['app_path'])
+			show_list.append(info["root_path"].replace(self.folder_path['root'], ""))
 		view.window().show_quick_panel(show_list, self.open_result_file)
 
 	def open_result_file(self, result):
@@ -1509,6 +1526,5 @@ class Path:
 		if "line_number" in self.result_list_option:
 			self.set_open_file_callback(self.open_file_callback, self.result_list[result]['line_number'])
 		# open file
-		selected = self.result_list[result]['app_path']
-		self.switch_to_file(self.folder_path['app'] + selected, self.show_list_view)
+		self.switch_to_file(self.result_list[result]["root_path"], self.show_list_view)
 
