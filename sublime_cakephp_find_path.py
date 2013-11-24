@@ -880,6 +880,8 @@ class Path:
 			self.dir_path['vendor'],
 		]
 		root = self.folder_path['plugin']
+		if not os.path.exists(root):
+			return False
 		list = os.listdir(root)
 		for name in list:
 			if os.path.isfile(root + name):
@@ -1188,7 +1190,7 @@ class Path:
 
 	def switch_to_locale(self, view, plugin_name):
 		category_path = self.get_category_path('locale', plugin_name)
-		if not category_path:
+		if not category_path or not os.path.exists(category_path):
 			return False
 
 		if plugin_name:
