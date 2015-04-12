@@ -21,7 +21,7 @@ class FindParentThread(threading.Thread):
 		# delete duplicate
 		list = []
 		for name in new_list:
-			new_name = name.encode('utf-8')
+			new_name = name
 			if not new_name in list:
 				list.append(new_name)
 		self.parent = parent
@@ -38,7 +38,10 @@ class FindParentThread(threading.Thread):
 		if file_path == False:
 			return
 		# read class file
-		f = open(file_path)
+		if sublime.version().startswith('3'):
+			f = open(file_path, 'r', encoding='utf-8')
+		elif sublime.version().startswith('2'):
+			f = open(file_path)
 		file_content = f.read()
 		f.close()
 		# search method or variable
