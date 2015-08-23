@@ -157,6 +157,12 @@ class Path:
 			# composer install >= Version 3.0
 			elif os.path.exists(self.folder_path['root'] + "vendor/cakephp/cakephp/VERSION.txt"):
 				self.folder_path['core_top'] = self.folder_path['root'] + "vendor/cakephp/cakephp/Cake/"
+			# .dotcake
+			dotcake = self.read_dotcake(self.folder_path['app'])
+			if dotcake is not None and 'cake' in dotcake:
+				core_top = self.replace_file_path(os.path.normpath(self.folder_path['app'] + dotcake['cake'] + "Cake") + '/')
+				if os.path.exists(core_top):
+					self.folder_path['core_top'] = core_top
 			# find path by setting option
 			if (self.folder_path['core_top'] is None and
 				user_settings is not None and "project_path" in user_settings):
@@ -214,6 +220,15 @@ class Path:
 				self.folder_path['root'] = os.path.dirname(os.path.dirname(self.folder_path['core_top'][0:-1])) + "/"
 			elif self.folder_path['core_top'][0:-1].split("/")[-1] == 'cake':
 				self.folder_path['root'] = os.path.dirname(self.folder_path['core_top'][0:-1]) + "/"
+
+	def read_dotcake(self, app_path):
+		file_path = app_path + ".cake"
+		if not os.path.exists(file_path):
+			return None
+		f = open(file_path)
+		content = json.load(f)
+		f.close()
+		return content
 
 	def convert_file_path(self, view):
 		return self.replace_file_path(view.file_name())
