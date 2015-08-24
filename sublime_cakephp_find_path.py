@@ -160,9 +160,16 @@ class Path:
 			# .dotcake
 			dotcake = self.read_dotcake(self.folder_path['app'])
 			if dotcake is not None and 'cake' in dotcake:
-				core_top = self.replace_file_path(os.path.normpath(self.folder_path['app'] + dotcake['cake'] + "Cake") + '/')
-				if os.path.exists(core_top):
-					self.folder_path['core_top'] = core_top
+				if ':' in dotcake['cake']:
+					core_top = self.replace_file_path(os.path.normpath(dotcake['cake']))
+				else:
+					core_top = self.replace_file_path(os.path.normpath(self.folder_path['app'] + dotcake['cake']))
+				# version 2
+				if os.path.exists(core_top + '/Cake/'):
+					self.folder_path['core_top'] = core_top + '/Cake/'
+				# version 1
+				elif os.path.exists(core_top + '/libs/') and os.path.exists(core_top + '/VERSION.txt'):
+					self.folder_path['core_top'] = core_top + '/'
 			# find path by setting option
 			if (self.folder_path['core_top'] is None and
 				user_settings is not None and "project_path" in user_settings):

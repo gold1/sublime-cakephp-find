@@ -31,13 +31,13 @@ If directory "lib/Cake" was not placed in default path, you can set the new path
 - Sample
 
 ```linux
-/home/www/html/cakephp/app/         : app
-/home/www/cakephp/2.3.9/lib/Cake/   : cake
+C:\www\html\cakephp\app\         : app
+C:\www\cakephp\2.3.9\lib\Cake\   : cake
 ```
 
-Write on `/home/www/html/cakephp/app/.cake`
+Write on `C:\www\html\cakephp\app\.cake`
 ```json
-{"cake":"/home/www/cakephp/2.3.9/lib/Cake/"}
+{"cake":"C:/www/html/cakephp/2.3.9/lib/Cake/"}
 ```
 or
 ```json
