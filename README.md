@@ -29,7 +29,7 @@ You can find out file and open easily.
 
 ######  App::build 
 
-It's possible to search for the folder designated in App::build.
+It's possible to search for the folder designated in App::build (only Model, Behavior, Datasource, Controller, Component, Auth, Auth, Helper, Lib, Vendor).
 
 - Sample
 
