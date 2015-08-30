@@ -241,6 +241,8 @@ class Path:
 		return self.replace_file_path(view.file_name())
 
 	def replace_file_path(self, file_path):
+		if file_path is None:
+			file_path = ""
 		if os.name == "nt":
 			file_path = file_path.replace("\\", "/")
 		return file_path
@@ -474,6 +476,34 @@ class Path:
 			]
 			for category in list:
 				self.folder_path[category] = self.folder_path['core'] + self.dir_path[category]
+
+		# dotcake
+		self.folder_path['build'] = {}
+		if self.folder_path['app'] is not None:
+			dotcake = self.read_dotcake(self.folder_path['app'])
+			if dotcake is not None:
+				list = [
+					'models',
+					'behaviors',
+					'controllers',
+					'components',
+					'helpers',
+					'datasources',
+					'auths',
+					'acls',
+					'libs',
+					'vendors',
+				]
+				for category in list:
+					if dotcake['build_path'][category] is not None:
+						self.folder_path['build'][category] = []
+						for category_path in dotcake['build_path'][category]:
+							if ':' in category_path:
+								new_category_path = self.replace_file_path(os.path.normpath(category_path) + '/')
+							else:
+								new_category_path = self.replace_file_path(os.path.normpath(self.folder_path['app'] + category_path) + '/')
+							if os.path.exists(new_category_path):
+								self.folder_path['build'][category].append(new_category_path)
 
 	def get_this_dir(self, view):
 		return os.path.dirname(self.convert_file_path(view)) + "/"
@@ -827,6 +857,20 @@ class Path:
 			file_path = self.search_class_file_plugin_all(search_class_name, current_file_type)
 			if file_path:
 				return file_path
+			# build path
+			build_direct_dir_list = ["components", "models", "behaviors", "helpers", "controllers", "datasources", "auths", "acls"]
+			for dir_name in build_direct_dir_list:
+				if self.folder_path['build'][dir_name] is not None:
+					for dir_path in self.folder_path['build'][dir_name]:
+						if os.path.exists(dir_path + file_name + ".php"):
+							return dir_path + file_name + ".php"
+			build_recursive_dir_list = ["libs", "vendors"]
+			for dir_name in build_recursive_dir_list:
+				if self.folder_path['build'][dir_name] is not None:
+					for dir_path in self.folder_path['build'][dir_name]:
+						file_path = self.search_file_recursive(file_name + ".php", dir_path)
+						if file_path:
+							return file_path
 
 		if self.folder_path['core_top'] is not None:
 			file_path = self.search_core_file(file_name)

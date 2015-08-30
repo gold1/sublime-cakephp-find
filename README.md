@@ -26,6 +26,31 @@ You can find out file and open easily.
     Copy the directory to: "C:\Documents and Settings\<username>\Application Data\Sublime Text 2\Packages"
 
 ## Setup (Version >= 0.8.64)
+
+######  App::build 
+
+It's possible to search for the folder designated in App::build.
+
+- Sample
+
+```linux
+C:\www\html\cakephp\app\   : app
+C:\www\mylib\cake2\Model\***.php  : Model class in directory
+```
+
+```php
+App::build(array(
+    'Lib' => array('../../../mylib/cake2/Model/'),
+));
+```
+
+Write on `C:\www\html\cakephp\app\.cake`
+```json
+{"build_path":{"libs":"..\/..\/..\/mylib\/cake2\/Model\/"}}
+```
+
+######  Movement of a core folder
+
 If directory "lib/Cake" was not placed in default path, you can set the new path in Sublime settings:
 
 - Sample
